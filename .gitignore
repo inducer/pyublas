@@ -1,0 +1,11 @@
+build
+siteconf.py
+*.pdf
+doc/html
+*~
+.*.swp
+*.a
+*.o
+*.pyc
+Makefile
+tags
