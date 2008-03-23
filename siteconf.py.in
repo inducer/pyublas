@@ -3,21 +3,7 @@
 # See documentation for hints.
 # --------------------------------------------------------------------
 
-PYLINEAR_CONF_TEMPLATE_VERSION = 2
-
-# Change to "True" (without the quotes) if the respective package is available.
-HAVE_BLAS = ${HAVE_BLAS}
-HAVE_LAPACK = ${HAVE_LAPACK}
-HAVE_ARPACK = ${HAVE_ARPACK}
-HAVE_UMFPACK = ${HAVE_UMFPACK}
-HAVE_FFTW = ${HAVE_FFTW}
-
-# DASKR is included in PyLinear's source for your convenience.
-# You may go to fortran/daskr and run ./build.sh, then set 
-# this variable to True. The default settings below should then
-# suffice to include DASKR in your build.
-
-HAVE_DASKR = ${HAVE_DASKR} or ${COMPILE_DASKR}
+PYUBLAS_CONF_TEMPLATE_VERSION = 1
 
 # --------------------------------------------------------------------
 # Path options
@@ -29,34 +15,10 @@ BPL_LIBRARIES = [$str{BOOST_PYTHON_LIBNAME}]
 
 BOOST_BINDINGS_INCLUDE_DIRS = [$str{BOOST_BINDINGS_INC_DIR}]
 
-BLAS_LIBRARY_DIRS = [$str{BLAS_LIB_DIR}]
-BLAS_LIBRARIES = $str{BLAS_LIB_NAMES}.split(",")
-
-LAPACK_LIBRARY_DIRS = [$str{LAPACK_LIB_DIR}]
-LAPACK_LIBRARIES = $str{LAPACK_LIB_NAMES}.split(",")
-
-ARPACK_LIBRARY_DIRS = [$str{ARPACK_LIB_DIR}]
-ARPACK_LIBRARIES = $str{ARPACK_LIB_NAMES}.split(",")
-
-UMFPACK_INCLUDE_DIRS = [$str{UMFPACK_INC_DIR}] 
-UMFPACK_LIBRARY_DIRS = []
-UMFPACK_LIBRARIES = $str{UMFPACK_LIB_NAMES}.split(",")
-
-FFTW_INCLUDE_DIRS = [$str{FFTW_INC_DIR}] 
-FFTW_LIBRARY_DIRS = []
-FFTW_LIBRARIES = $str{FFTW_LIB_NAMES}.split(",")
-
-DASKR_LIBRARY_DIRS = ["fortran/daskr"]
-DASKR_LIBRARIES = ["daskr"]
-
 # --------------------------------------------------------------------
 # Compiler flags
 # --------------------------------------------------------------------
 from pytools import flatten
 EXTRA_COMPILE_ARGS = list(flatten([eca.split() for eca in [$str{CXXFLAGS}]]))
-SUPPLY_XERBLA = ${SUPPLY_XERBLA}
-XERBLA_LIBRARY_DIRS = ["fortran/xerbla"]
-XERBLA_LIBRARIES = ["xerbla"]
-
 
 
