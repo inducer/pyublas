@@ -20,6 +20,11 @@
 
 
 
+#include <boost/python.hpp>
+
+
+
+
 #define PYUBLAS_PYERROR(TYPE, REASON) \
 { \
   PyErr_SetString(PyExc_##TYPE, REASON); \
@@ -31,7 +36,61 @@
 
 namespace pyublas
 {
+  template <typename T>
+  inline PyObject *pyobject_from_new_ptr(T *ptr)
+  {
+    return typename boost::python::manage_new_object::apply<T *>::type()(ptr);
+  }
 
+
+
+
+  template <typename T>
+  inline boost::python::handle<> handle_from_new_ptr(T *ptr)
+  {
+    return boost::python::handle<>(
+        typename boost::python::manage_new_object::apply<T *>::type()(ptr));
+  }
+
+
+
+
+  template <typename T>
+  inline boost::python::handle<> handle_from_existing_ptr(T *ptr)
+  {
+    return boost::python::handle<>(
+        typename boost::python::reference_existing_object::apply<T *>::type()(ptr)
+        );
+  }
+
+
+
+
+  template <typename T>
+  inline boost::python::handle<> handle_from_existing_ref(T &ptr)
+  {
+    return boost::python::handle<>(
+        typename boost::python::reference_existing_object::apply<T &>::type()(ptr)
+        );
+  }
+
+
+
+
+  inline boost::python::handle<> handle_from_object(const boost::python::object &obj)
+  {
+    return boost::python::handle<>(boost::python::borrowed(obj.ptr()));
+  }
+
+
+
+
+  template <typename T>
+  inline boost::python::handle<> handle_from_rvalue(const T &val)
+  {
+    boost::python::object obj(val);
+    return handle_from_object(obj);
+  }
 }
 
 

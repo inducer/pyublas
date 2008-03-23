@@ -210,7 +210,7 @@ namespace
 
 
 
-BOOST_PYTHON_MODULE(_internal)
+void pyublas_expose_converters()
 {
   import_array();
 

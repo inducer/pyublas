@@ -89,7 +89,10 @@ def main():
           ext_package="pyublas",
           ext_modules=[ Extension("_internal", 
                                   [
-                                      "src/wrapper/wrapper.cpp"
+                                      "src/wrapper/main.cpp",
+                                      "src/wrapper/converters.cpp",
+                                      "src/wrapper/sparse_build.cpp",
+                                      "src/wrapper/sparse_execute.cpp"
                                    ],
                                   include_dirs=INCLUDE_DIRS,
                                   library_dirs=LIBRARY_DIRS,

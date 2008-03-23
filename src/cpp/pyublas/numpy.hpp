@@ -9,9 +9,6 @@
 // about the suitability of this software for any purpose.
 // It is provided "as is" without express or implied warranty.
 //
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// CALL import_array() before using this header, otherwise you will segfault.
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 
@@ -37,6 +34,12 @@
 
 namespace pyublas
 {
+  static struct array_importer
+  {
+    array_importer()
+    { import_array(); }
+  } _array_importer;
+
   NPY_TYPES get_typenum(bool) { return NPY_BOOL; }
   NPY_TYPES get_typenum(npy_bool) { return NPY_BOOL; }
   NPY_TYPES get_typenum(npy_byte) { return NPY_BYTE; }
