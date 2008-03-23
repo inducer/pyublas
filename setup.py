@@ -87,7 +87,7 @@ def main():
           packages=["pyublas"],
           package_dir={"pyublas": "src/python"},
           ext_package="pyublas",
-          ext_modules=[ Extension("_array", 
+          ext_modules=[ Extension("_internal", 
                                   [
                                       "src/wrapper/wrapper.cpp"
                                    ],
@@ -120,7 +120,7 @@ if __name__ == '__main__':
                         break
                 if flag in cflags:
                     cflags.remove(flag)
-            cflags.append("-O3")
+            cflags.append("-g")
             cvars['OPT'] = str.join(' ', cflags)
             cvars["CFLAGS"] = cvars["BASECFLAGS"] + " " + cvars["OPT"]
     # and now call main
