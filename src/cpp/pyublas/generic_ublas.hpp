@@ -20,7 +20,9 @@
 
 
 
+#include <boost/mpl/if.hpp>
 #include <boost/mpl/bool.hpp>
+#include <boost/type_traits/is_const.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -102,8 +104,8 @@ namespace generic_ublas {
   template <typename UblasType>
     struct is_vector { typedef mpl::false_ type; };
 
-  template <typename ValueType>
-    struct is_vector<ublas::vector<ValueType> > { typedef mpl::true_ type; };
+  template <typename ValueType, typename L>
+    struct is_vector<ublas::vector<ValueType, L> > { typedef mpl::true_ type; };
   template <typename WrappedVector>
     struct is_vector<ublas::vector_slice<WrappedVector> > { typedef mpl::true_ type; };
   template <typename WrappedVector>
@@ -117,13 +119,27 @@ namespace generic_ublas {
   // matrix_iterator ----------------------------------------------------------
   template <typename MatrixType, typename _is_vector = typename is_vector<MatrixType>::type>
   class matrix_iterator :  public boost::iterator_facade<
+
     matrix_iterator<MatrixType>,  // Base
+
     typename MatrixType::value_type, // Value
+
     boost::forward_traversal_tag, // CategoryOrTraversal
-    typename MatrixType::iterator2::reference> // Reference
+
+    typename boost::mpl::if_<boost::is_const<MatrixType>,
+      typename MatrixType::const_iterator2::reference,
+      typename MatrixType::iterator2::reference
+      >::type // Reference
+   > 
   {
-    typedef typename MatrixType::iterator1 it1_t;
-    typedef typename MatrixType::iterator2 it2_t;
+    typedef typename boost::mpl::if_<boost::is_const<MatrixType>,
+      typename MatrixType::const_iterator1,
+      typename MatrixType::iterator1
+      >::type it1_t;
+    typedef typename boost::mpl::if_<boost::is_const<MatrixType>,
+      typename MatrixType::const_iterator2,
+      typename MatrixType::iterator2
+      >::type it2_t;
 
     it1_t       m_it1;
     it2_t       m_it2;
@@ -170,7 +186,7 @@ namespace generic_ublas {
       return m_it1 == other.m_it1 && m_it2 == other.m_it2;
     }
 
-    typename MatrixType::iterator2::reference dereference() const 
+    typename it2_t::reference dereference() const 
     {
       return *m_it2; 
     }

@@ -27,6 +27,7 @@
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <numpy/arrayobject.h>
+#include <boost/numeric/bindings/traits/ublas_vector.hpp>
 
 
 
@@ -40,29 +41,29 @@ namespace pyublas
     { import_array(); }
   } _array_importer;
 
-  NPY_TYPES get_typenum(bool) { return NPY_BOOL; }
-  NPY_TYPES get_typenum(npy_bool) { return NPY_BOOL; }
-  NPY_TYPES get_typenum(npy_byte) { return NPY_BYTE; }
+  inline NPY_TYPES get_typenum(bool) { return NPY_BOOL; }
+  inline NPY_TYPES get_typenum(npy_bool) { return NPY_BOOL; }
+  inline NPY_TYPES get_typenum(npy_byte) { return NPY_BYTE; }
   // NPY_TYPES get_typenum(npy_ubyte) { return NPY_UBYTE; }
-  NPY_TYPES get_typenum(npy_short) { return NPY_SHORT; }
-  NPY_TYPES get_typenum(npy_ushort) { return NPY_USHORT; }
-  NPY_TYPES get_typenum(npy_int) { return NPY_INT; }
-  NPY_TYPES get_typenum(npy_uint) { return NPY_UINT; }
-  NPY_TYPES get_typenum(npy_long) { return NPY_LONG; }
-  NPY_TYPES get_typenum(npy_ulong) { return NPY_ULONG; }
-  NPY_TYPES get_typenum(npy_longlong) { return NPY_LONGLONG; }
-  NPY_TYPES get_typenum(npy_ulonglong) { return NPY_ULONGLONG; }
-  NPY_TYPES get_typenum(npy_float) { return NPY_FLOAT; }
-  NPY_TYPES get_typenum(npy_double) { return NPY_DOUBLE; }
-  NPY_TYPES get_typenum(npy_longdouble) { return NPY_LONGDOUBLE; }
-  NPY_TYPES get_typenum(npy_cfloat) { return NPY_CFLOAT; }
-  NPY_TYPES get_typenum(npy_cdouble) { return NPY_CDOUBLE; }
-  NPY_TYPES get_typenum(npy_clongdouble) { return NPY_CLONGDOUBLE; }
-  NPY_TYPES get_typenum(std::complex<float>) { return NPY_CFLOAT; }
-  NPY_TYPES get_typenum(std::complex<double>) { return NPY_CDOUBLE; }
-  NPY_TYPES get_typenum(std::complex<long double>) { return NPY_CLONGDOUBLE; }
-  NPY_TYPES get_typenum(boost::python::object) { return NPY_OBJECT; }
-  NPY_TYPES get_typenum(boost::python::handle<>) { return NPY_OBJECT; }
+  inline NPY_TYPES get_typenum(npy_short) { return NPY_SHORT; }
+  inline NPY_TYPES get_typenum(npy_ushort) { return NPY_USHORT; }
+  inline NPY_TYPES get_typenum(npy_int) { return NPY_INT; }
+  inline NPY_TYPES get_typenum(npy_uint) { return NPY_UINT; }
+  inline NPY_TYPES get_typenum(npy_long) { return NPY_LONG; }
+  inline NPY_TYPES get_typenum(npy_ulong) { return NPY_ULONG; }
+  inline NPY_TYPES get_typenum(npy_longlong) { return NPY_LONGLONG; }
+  inline NPY_TYPES get_typenum(npy_ulonglong) { return NPY_ULONGLONG; }
+  inline NPY_TYPES get_typenum(npy_float) { return NPY_FLOAT; }
+  inline NPY_TYPES get_typenum(npy_double) { return NPY_DOUBLE; }
+  inline NPY_TYPES get_typenum(npy_longdouble) { return NPY_LONGDOUBLE; }
+  inline NPY_TYPES get_typenum(npy_cfloat) { return NPY_CFLOAT; }
+  inline NPY_TYPES get_typenum(npy_cdouble) { return NPY_CDOUBLE; }
+  inline NPY_TYPES get_typenum(npy_clongdouble) { return NPY_CLONGDOUBLE; }
+  inline NPY_TYPES get_typenum(std::complex<float>) { return NPY_CFLOAT; }
+  inline NPY_TYPES get_typenum(std::complex<double>) { return NPY_CDOUBLE; }
+  inline NPY_TYPES get_typenum(std::complex<long double>) { return NPY_CLONGDOUBLE; }
+  inline NPY_TYPES get_typenum(boost::python::object) { return NPY_OBJECT; }
+  inline NPY_TYPES get_typenum(boost::python::handle<>) { return NPY_OBJECT; }
   /* NPY_STRING, NPY_UNICODE unsupported for now */
 
 
@@ -119,27 +120,36 @@ namespace pyublas
           PYUBLAS_PYERROR(TypeError, "argument is not a numpy array");
         if (PyArray_TYPE(obj.get()) != get_typenum(T()))
           PYUBLAS_PYERROR(TypeError, "argument is numpy array of wrong type");
-        if (!PyArray_CHKFLAGS(obj.get(), NPY_ALIGNED | NPY_CONTIGUOUS))
-            PYUBLAS_PYERROR(ValueError, "argument array is not aligned and contiguous");
+        if (!PyArray_CHKFLAGS(obj.get(), NPY_ALIGNED))
+            PYUBLAS_PYERROR(ValueError, "argument array is not aligned");
+        if (PyArray_CHKFLAGS(obj.get(), NPY_NOTSWAPPED))
+            PYUBLAS_PYERROR(ValueError, "argument array does not have native endianness");
       }
 
     private:
       void resize_internal (size_type new_size, value_type init, bool preserve = true) 
       {
-        size_type old_size = size();
+        size_type old_size;
+        if (m_numpy_array.get())
+          old_size = size();
+        else
+        {
+          preserve = false;
+          old_size = 0;
+        }
 
         if (new_size != old_size) 
         {
           npy_intp dims[] = { new_size };
           boost::python::handle<> new_array = boost::python::handle<>(
               PyArray_SimpleNew(1, dims, get_typenum(T())));
-          pointer data = reinterpret_cast<T *>(
+          pointer new_data = reinterpret_cast<T *>(
               PyArray_DATA(new_array.get()));
 
           if (preserve) 
           {
-            std::copy(data(), data() + std::min(new_size, old_size), data);
-            std::fill(data + std::min(new_size, old_size), data + new_size, init);
+            std::copy(data(), data() + std::min(new_size, old_size), new_data);
+            std::fill(new_data + std::min(new_size, old_size), new_data + new_size, init);
           }
 
           m_numpy_array = new_array;
@@ -164,7 +174,7 @@ namespace pyublas
         return PyArray_ISWRITEABLE(m_numpy_array.get());
       }
 
-    private:
+      // Raw data access
       T *data()
       {
         return reinterpret_cast<T *>(
@@ -177,7 +187,6 @@ namespace pyublas
             PyArray_DATA(m_numpy_array.get()));
       }
 
-    public:
       // Element access
       const_reference operator [] (size_type i) const 
       {
@@ -196,12 +205,14 @@ namespace pyublas
           const numpy_array &a) 
       {
         m_numpy_array = a.m_numpy_array;
+        return *this;
       }
 
       numpy_array &assign_temporary(
           numpy_array &a) 
       {
         m_numpy_array = a.m_numpy_array;
+        return *this;
       }
 
         // Swapping
@@ -311,6 +322,13 @@ namespace pyublas
       numpy_vector(const boost::numeric::ublas::vector_expression<AE> &ae)
       : super(ae)
       { }
+
+      // as-ublas accessor
+      super &as_ublas() 
+      { return *this; }
+
+      const super &as_ublas() const
+      { return *this; }
   };
 
 
@@ -328,7 +346,7 @@ namespace pyublas
 
 
 
-  template<class T, class L>
+  template<class T, class L = boost::numeric::ublas::row_major>
   class numpy_matrix
   : public boost::numeric::ublas::matrix<T, L, numpy_array<T> > 
   {
@@ -410,8 +428,102 @@ namespace pyublas
       : super(ae)
       {
       }
+
+      super &as_ublas() 
+      { return *this; }
+
+      const super &as_ublas() const
+      { return *this; }
   };
+
+
+
+
+  template <class T, class C>
+  class by_value_rw_member_visitor 
+  : public boost::python::def_visitor<by_value_rw_member_visitor<T, C> >
+  {
+    private:
+      const char *m_name;
+      T C::*m_member;
+      const char *m_doc;
+
+    public:
+      by_value_rw_member_visitor(const char *name, T C::*member, const char *doc = 0)
+        : m_name(name), m_member(member), m_doc(doc)
+      { }
+
+      template <class Class>
+      void visit(Class& cl) const
+      {
+        cl.add_property(m_name, 
+            make_getter(m_member, 
+              boost::python::return_value_policy<boost::python::return_by_value>()), 
+            make_setter(m_member), 
+            m_doc);
+      }
+  };
+
+  template <class T, class C>
+  by_value_rw_member_visitor<T, C> by_value_rw_member(
+      const char *name, T C::*member, const char *doc = 0)
+  {
+    return by_value_rw_member_visitor<T, C>(name, member, doc);
+  }
+
+  template <class T, class C>
+  class by_value_ro_member_visitor 
+  : public boost::python::def_visitor<by_value_ro_member_visitor<T, C> >
+  {
+    private:
+      const char *m_name;
+      T C::*m_member;
+      const char *m_doc;
+
+    public:
+      by_value_ro_member_visitor(const char *name, T C::*member, const char *doc = 0)
+        : m_name(name), m_member(member), m_doc(doc)
+      { }
+
+      template <class Class>
+      void visit(Class& cl) const
+      {
+        cl.add_property(m_name, 
+            make_getter(m_member, 
+              boost::python::return_value_policy<boost::python::return_by_value>()), 
+            m_doc);
+      }
+  };
+
+  template <class T, class C>
+  by_value_ro_member_visitor<T, C> by_value_rw_member(
+      const char *name, T C::*member, const char *doc = 0)
+  {
+    return by_value_ro_member_visitor<T, C>(name, member, doc);
+  }
 }
+
+
+
+
+namespace boost { namespace numeric { namespace bindings { namespace traits {
+  template <typename T, typename V>
+  struct vector_detail_traits< pyublas::numpy_array<T>, V > 
+  : default_vector_traits< V, T > 
+  {
+#ifndef BOOST_NUMERIC_BINDINGS_NO_SANITY_CHECK
+    BOOST_STATIC_ASSERT( 
+        (boost::is_same< pyublas::numpy_array<T>, 
+         typename boost::remove_const<V>::type >::value) );
+#endif
+
+    typedef pyublas::numpy_array<T>                      identifier_type; 
+    typedef V                                            vector_type;
+    typedef typename default_vector_traits<V,T>::pointer pointer;
+
+    static pointer storage (vector_type& v) { return v.data(); }
+  }; 
+}}}}  
 
 
 

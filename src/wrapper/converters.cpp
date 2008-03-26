@@ -46,6 +46,8 @@ namespace
         return 0;
       if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED | NPY_CONTIGUOUS))
         return 0;
+      if (PyArray_CHKFLAGS(obj, NPY_NOTSWAPPED))
+        return 0;
 
       return obj;
     }
@@ -86,7 +88,7 @@ namespace
         return 0;
       if (PyArray_TYPE(obj) != get_typenum(value_type()))
         return 0;
-      if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED | NPY_CONTIGUOUS))
+      if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED))
         return 0;
       if (PyArray_NDIM(obj) != 2)
         return 0;

@@ -32,15 +32,15 @@ def main():
     LIBRARY_DIRS = conf["BOOST_LIBRARY_DIRS"]
     LIBRARIES = conf["BPL_LIBRARIES"]
 
-    OP_EXTRA_INCLUDE_DIRS = conf["BOOST_BINDINGS_INCLUDE_DIRS"]
-    OP_EXTRA_LIBRARY_DIRS = []
-    OP_EXTRA_LIBRARIES = []
+    EXTRA_INCLUDE_DIRS = conf["BOOST_BINDINGS_INCLUDE_DIRS"]
+    EXTRA_LIBRARY_DIRS = []
+    EXTRA_LIBRARIES = []
 
     OP_EXTRA_DEFINES = {}
 
     setup(name="PyUblas",
           version="0.90",
-          description="Numpy-UBlas interoperability",
+          description="Seamless Numpy-UBlas interoperability",
           author=u"Andreas Kloeckner",
           author_email="inform@tiker.net",
           license = "BSD",
@@ -55,9 +55,9 @@ def main():
                                       "src/wrapper/sparse_build.cpp",
                                       "src/wrapper/sparse_execute.cpp"
                                    ],
-                                  include_dirs=INCLUDE_DIRS,
-                                  library_dirs=LIBRARY_DIRS,
-                                  libraries=LIBRARIES,
+                                  include_dirs=INCLUDE_DIRS+EXTRA_INCLUDE_DIRS,
+                                  library_dirs=LIBRARY_DIRS+EXTRA_LIBRARY_DIRS,
+                                  libraries=LIBRARIES+EXTRA_LIBRARIES,
                                   extra_compile_args=conf["EXTRA_COMPILE_ARGS"],
                                   ),
                         ],
@@ -85,7 +85,7 @@ if __name__ == '__main__':
                         break
                 if flag in cflags:
                     cflags.remove(flag)
-            cflags.append("-g")
+            cflags.append("-O3")
             cvars['OPT'] = str.join(' ', cflags)
             cvars["CFLAGS"] = cvars["BASECFLAGS"] + " " + cvars["OPT"]
     # and now call main

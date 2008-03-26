@@ -69,14 +69,6 @@ struct change_value_type<ublas::vector<OldValueType>, NewValueType>
 
 
 
-// get_corresponding_vector_type
-template <typename MatrixType>
-struct get_corresponding_vector_type 
-{ typedef ublas::vector<typename MatrixType::value_type> type; };
-
-
-
-
 // generic instantiation infrastructure ---------------------------------------
 template <typename Exposer, typename ValueType>
 static void exposeForAllSimpleTypes(const std::string &python_eltname, const Exposer &exposer, ValueType)
@@ -104,7 +96,7 @@ static void exposeForAllMatrices(const Exposer &exposer, T)
 template <typename Exposer, typename T>
 static void exposeForAllMatrices(const Exposer &exposer, std::complex<T>)
 {
-  exposeForAllSimpleTypes("Complex64", exposer, std::complex<T>());
+  exposeForAllSimpleTypes("Complex128", exposer, std::complex<T>());
 }
 
 

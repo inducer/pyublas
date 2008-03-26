@@ -1,20 +1,15 @@
-# element type aliases  --------------------------------------------------------
-class Float64:
-    pass
-class Complex64:
-    pass
-Float = Float64
-Complex = Complex64
+import numpy
+import pyublas._internal
 
 
 
 
 # type code-related  -----------------------------------------------------------
 def _dtype_name(dtype):
-    if dtype == Float64:
+    if dtype in [numpy.float64, numpy.float, float, numpy.dtype(numpy.float64)]:
         return "Float64"
-    elif dtype == Complex64:
-        return "Complex64"
+    elif dtype in [numpy.complex128, numpy.complex, complex, numpy.dtype(numpy.complex128)]:
+        return "Complex128"
     else:
         raise RuntimeError, "Invalid dtype specified"
 
@@ -30,12 +25,11 @@ class ParameterizedType(object):
 
     def __init__(self, name, use_dict=None):
         if use_dict is None:
-            import pyublas._internal
             use_dict = pyublas._internal.__dict__
         self.Name = name
 
         type_dict = {}
-        for tc in DTYPES:
+        for tc in DTYPES_AND_ALIASES:
             type_dict[tc] = use_dict[name + _dtype_name(tc)]
         self.TypeDict = type_dict
 
@@ -61,10 +55,17 @@ class ParameterizedType(object):
 
 
 
-DTYPES = [
-    Float64,
-    Complex64
+DTYPES_AND_ALIASES = [
+    numpy.dtype(numpy.float64),
+    numpy.dtype(numpy.complex128),
+    numpy.float64,
+    numpy.complex128,
+    numpy.float,
+    numpy.complex,
+    float,
+    complex
     ]
+DTYPES = [ float, complex ]
 
 
 
@@ -201,7 +202,7 @@ _add_python_methods()
 
 
 # public interface  ------------------------------------------------------------
-def zeros(shape, dtype=Float, flavor=SparseBuildMatrix):
+def zeros(shape, dtype=float, flavor=SparseBuildMatrix):
     """Return a zero-filled array."""
     return flavor(dtype)(*shape)
 
@@ -237,7 +238,7 @@ def asarray(data, dtype=None, flavor=None):
 
 
 
-def   sparse(mapping,   shape=None,    dtype=None,    flavor=SparseBuildMatrix):
+def sparse(mapping, shape=None, dtype=None, flavor=SparseBuildMatrix):
     """Create a sparse Array from (two-level) nested
     mappings (e.g. dictionaries).
 
@@ -249,11 +250,11 @@ def   sparse(mapping,   shape=None,    dtype=None,    flavor=SparseBuildMatrix):
     See array() for valid dtype and flavors.
     """
 
-    def get_biggest_type(mapping, prev_biggest_type = Float64):
+    def get_biggest_type(mapping, prev_biggest_type=float):
         for row in mapping.values():
             for val in row.values():
                 if isinstance(val, complex):
-                    prev_biggest_type = Complex
+                    prev_biggest_type = complex
         return prev_biggest_type
 
     if dtype is None:
@@ -272,3 +273,33 @@ def   sparse(mapping,   shape=None,    dtype=None,    flavor=SparseBuildMatrix):
         for j, val in row.iteritems():
             mat[i,j] = val
     return mat
+
+
+
+
+def why_not(val, dtype=float, matrix=False, row_major=True):
+    from warnings import warn
+    import numpy
+    if not isinstance(val, numpy.ndarray):
+        warn("array is not a numpy object")
+    elif dtype != val.dtype:
+        warn("array has wrong dtype (%s)" % str(val.dtype))
+    elif not val.flags.aligned:
+        warn("array is not aligned")
+    elif not val.flags.aligned:
+        warn("array is not aligned")
+    elif val.dtype.byteorder not in ["=", "|"]:
+        warn("array does not have the right endianness (%s)" % val.dtype.byteorder)
+    elif matrix:
+        if len(val.shape) != 2:
+            warn("array rank is not 2")
+        else:
+            if val.strides[1] == val.itemsize:
+                if not row_major:
+                    warn("array is column-major, but row-major arrays are accepted")
+            elif val.strides[0] == val.itemsize:
+                if row_major:
+                    warn("array is row-major, but column-major arrays are accepted")
+            else:
+                warn("array is not contiguous")
+    return val

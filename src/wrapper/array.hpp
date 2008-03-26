@@ -23,6 +23,7 @@
 #include <boost/python/stl_iterator.hpp>
 
 #include <pyublas/python_helpers.hpp>
+#include <pyublas/numpy.hpp>
 
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>
@@ -195,7 +196,7 @@ struct python_matrix_value_iterator
     }
 
     return pyublas::handle_from_new_ptr(
-        new typename get_corresponding_vector_type<MatrixType>::type(
+        new pyublas::numpy_vector<typename MatrixType::value_type>(
           ublas::row(m_matrix, m_row_index++)));
   }
 
@@ -291,7 +292,7 @@ template <typename MatrixType>
 handle<> getElement(/*const*/ MatrixType &m, handle<> index)
 { 
   typedef
-    typename get_corresponding_vector_type<MatrixType>::type
+    pyublas::numpy_vector<typename MatrixType::value_type>
     vector_t;
   typedef
     typename MatrixType::value_type
@@ -355,7 +356,7 @@ template <typename MatrixType>
 void setElement(MatrixType &m, handle<> index, python::object &new_value)
 { 
   typedef 
-    typename get_corresponding_vector_type<MatrixType>::type
+    pyublas::numpy_vector<typename MatrixType::value_type>
     vector_t;
   typedef 
       typename MatrixType::value_type m_value_t;
@@ -657,14 +658,14 @@ void add_element_inplace(ublas::coordinate_matrix<V, ublas::column_major> &mat,
 
 
 template <typename MatrixType, typename SmallMatrixType>
-void addBlock(MatrixType &mat, 
+void add_block(MatrixType &mat, 
     typename MatrixType::size_type start_row,
     typename MatrixType::size_type start_column,
-    SmallMatrixType &small_mat)
+    const SmallMatrixType &small_mat)
 {
   typedef typename SmallMatrixType::size_type index_t;
 
-  generic_ublas::matrix_iterator<SmallMatrixType>
+  generic_ublas::matrix_iterator<const SmallMatrixType>
     first = generic_ublas::begin(small_mat),
     last = generic_ublas::end(small_mat);
 
@@ -682,10 +683,10 @@ void addBlock(MatrixType &mat,
 
 
 template <typename MatrixType, typename SmallMatrixType>
-void addScattered(MatrixType &mat, 
+void add_scattered(MatrixType &mat, 
     python::object row_indices_py, 
     python::object column_indices_py,
-    SmallMatrixType &small_mat)
+    const SmallMatrixType &small_mat)
 {
   using namespace boost::python;
 
@@ -705,7 +706,7 @@ void addScattered(MatrixType &mat,
       || column_indices.size() != small_mat.size2())
     throw std::runtime_error("sizes don't match");
 
-  generic_ublas::matrix_iterator<SmallMatrixType>
+  generic_ublas::matrix_iterator<const SmallMatrixType>
     first = generic_ublas::begin(small_mat),
     last = generic_ublas::end(small_mat);
 
@@ -723,10 +724,10 @@ void addScattered(MatrixType &mat,
 
 
 template <typename MatrixType, typename SmallMatrixType>
-void addScatteredWithSkip(MatrixType &mat, 
+void add_scattered_with_skip(MatrixType &mat, 
     python::object row_indices_py, 
     python::object column_indices_py,
-    SmallMatrixType &small_mat)
+    const SmallMatrixType &small_mat)
 {
   using namespace boost::python;
 
@@ -746,7 +747,7 @@ void addScatteredWithSkip(MatrixType &mat,
       || column_indices.size() != small_mat.size2())
     throw std::runtime_error("sizes don't match");
 
-  generic_ublas::matrix_iterator<SmallMatrixType>
+  generic_ublas::matrix_iterator<const SmallMatrixType>
     first = generic_ublas::begin(small_mat),
     last = generic_ublas::end(small_mat);
 
@@ -910,7 +911,7 @@ handle<> multiply_matrix_base(
   }
 
   typedef
-    typename get_corresponding_vector_type<MatrixType>::type
+    pyublas::numpy_vector<typename MatrixType::value_type>
     vector_t;
 
   python::extract<vector_t> op2_vec(op2);
@@ -920,13 +921,13 @@ handle<> multiply_matrix_base(
     if (mat.size2() != vec.size())
       throw std::runtime_error("matrix size doesn't match vector");
 
-    std::auto_ptr<ublas::vector<typename MatrixType::value_type> > result(new
-        ublas::vector<typename MatrixType::value_type>(mat.size1()));
+    vector_t result(mat.size1());
+
     if (!reverse)
-      ublas::axpy_prod(mat, vec, *result);
+      ublas::axpy_prod(mat, vec, result, /*init*/ true);
     else
-      ublas::axpy_prod(vec, mat, *result);
-    return pyublas::handle_from_new_ptr(result.release());
+      ublas::axpy_prod(vec, mat, result, /*init*/ true);
+    return pyublas::handle_from_rvalue(result);
   }
 
   python::extract<typename MatrixType::value_type> op2_scalar(op2);
@@ -1032,14 +1033,14 @@ void expose_add_scattered(PythonClass &pyclass)
   using python::arg;
 
   pyclass
-    .def("add_block", addBlock<WrappedClass, SmallMatrix>,
+    .def("add_block", add_block<WrappedClass, SmallMatrix>,
         (arg("self"), arg("start_row"), arg("start_column"), arg("small_mat")),
         "Add C{small_mat} to self, starting at C{start_row,start_column}.")
-    .def("add_scattered", addScattered<WrappedClass, SmallMatrix>,
+    .def("add_scattered", add_scattered<WrappedClass, SmallMatrix>,
         (arg("self"), arg("row_indices"), arg("column_indices"), arg("small_mat")),
         "Add C{small_mat} at intersections of C{row_indices} and "
         "C{column_indices}.")
-    .def("add_scattered_with_skip", addScatteredWithSkip<WrappedClass, SmallMatrix>,
+    .def("add_scattered_with_skip", add_scattered_with_skip<WrappedClass, SmallMatrix>,
         (arg("self"), arg("row_indices"), arg("column_indices"), arg("small_mat")),
         "Add C{small_mat} at intersections of C{row_indices} and "
         "C{column_indices}. Entries of C{row_indices} or C{column_indices} "
@@ -1144,7 +1145,7 @@ void expose_matrix_specialties(PYC &pyclass, ublas::coordinate_matrix<VT, L, IB,
         "The number of structural nonzeros in the matrix")
     ;
 
-  expose_add_scattered<cl, ublas::matrix<VT> >(pyclass);
+  expose_add_scattered<cl, pyublas::numpy_matrix<VT> >(pyclass);
   expose_add_scattered<cl, cl >(pyclass);
   expose_add_scattered<cl, 
     ublas::compressed_matrix<VT, ublas::column_major, 0, 
@@ -1183,7 +1184,7 @@ void expose_matrix_type(WrappedClass, const std::string &python_typename, const 
 
 #define EXPOSE_ALL_TYPES \
   exposeAll(double(), "Float64"); \
-  exposeAll(std::complex<double>(), "Complex64"); \
+  exposeAll(std::complex<double>(), "Complex128"); \
 
 
 
