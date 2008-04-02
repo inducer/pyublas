@@ -296,10 +296,10 @@ def why_not(val, dtype=float, matrix=False, row_major=True):
         else:
             if val.strides[1] == val.itemsize:
                 if not row_major:
-                    warn("array is column-major, but row-major arrays are accepted")
+                    warn("array is row-major, but column-major arrays are accepted")
             elif val.strides[0] == val.itemsize:
                 if row_major:
-                    warn("array is row-major, but column-major arrays are accepted")
+                    warn("array is column-major, but row-major arrays are accepted")
             else:
                 warn("array is not contiguous")
     return val

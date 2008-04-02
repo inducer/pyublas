@@ -496,7 +496,7 @@ namespace pyublas
   };
 
   template <class T, class C>
-  by_value_ro_member_visitor<T, C> by_value_rw_member(
+  by_value_ro_member_visitor<T, C> by_value_ro_member(
       const char *name, T C::*member, const char *doc = 0)
   {
     return by_value_ro_member_visitor<T, C>(name, member, doc);
