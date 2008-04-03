@@ -127,34 +127,7 @@ namespace
     {
       static PyObject* convert(tgt_type const &v)
       {
-        py::handle<> orig_handle = v.data().handle();
-
-        npy_intp dims[] = { v.size1(), v.size2() };
-        PyObject *result;
-
-        if (is_row_major(typename MatrixType::orientation_category()))
-        {
-          result = PyArray_New(
-              &PyArray_Type, 2, dims, 
-              get_typenum(value_type()), 
-              /*strides*/0, 
-              PyArray_DATA(orig_handle.get()),
-              /* ? */ 0, 
-              NPY_CARRAY, NULL);
-        }
-        else
-        {
-          result = PyArray_New(
-              &PyArray_Type, 2, dims, 
-              get_typenum(value_type()), 
-              /*strides*/0, 
-              PyArray_DATA(orig_handle.get()),
-              /* ? */ 0, 
-              NPY_FARRAY, NULL);
-        }
-
-        PyArray_BASE(result) = py::handle<>(orig_handle).release();
-        return result;
+        return v.to_python().release();
       }
     };
   };
