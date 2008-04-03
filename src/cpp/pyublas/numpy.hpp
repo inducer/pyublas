@@ -88,6 +88,8 @@ namespace pyublas
       // Construction and destruction
       numpy_array()
       {
+        m_numpy_array = boost::python::handle<>(
+            PyArray_SimpleNew(0, 0, get_typenum(T())));
       }
 
       numpy_array(size_type n)
@@ -329,6 +331,11 @@ namespace pyublas
 
       const super &as_ublas() const
       { return *this; }
+
+      boost::python::handle<> to_python() const
+      {
+        return this->data().handle();
+      }
   };
 
 
@@ -434,6 +441,38 @@ namespace pyublas
 
       const super &as_ublas() const
       { return *this; }
+
+      boost::python::handle<> to_python() const
+      {
+        boost::python::handle<> orig_handle = this->data().handle();
+
+        npy_intp dims[] = { this->size1(), this->size2() };
+        boost::python::handle<> result;
+
+        if (is_row_major(typename super::orientation_category()))
+        {
+          result = boost::python::handle<>(PyArray_New(
+              &PyArray_Type, 2, dims, 
+              get_typenum(typename super::value_type()), 
+              /*strides*/0, 
+              PyArray_DATA(orig_handle.get()),
+              /* ? */ 0, 
+              NPY_CARRAY, NULL));
+        }
+        else
+        {
+          result = boost::python::handle<>(PyArray_New(
+              &PyArray_Type, 2, dims, 
+              get_typenum(typename super::value_type()), 
+              /*strides*/0, 
+              PyArray_DATA(orig_handle.get()),
+              /* ? */ 0, 
+              NPY_FARRAY, NULL));
+        }
+
+        PyArray_BASE(result.get()) = boost::python::handle<>(orig_handle).release();
+        return result;
+      }
   };
 
 
@@ -457,9 +496,9 @@ namespace pyublas
       void visit(Class& cl) const
       {
         cl.add_property(m_name, 
-            make_getter(m_member, 
+            boost::python::make_getter(m_member, 
               boost::python::return_value_policy<boost::python::return_by_value>()), 
-            make_setter(m_member), 
+            boost::python::make_setter(m_member), 
             m_doc);
       }
   };
