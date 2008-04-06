@@ -27,7 +27,16 @@ if not NUMPY_INC_DIRS:
 # --------------------------------------------------------------------
 # Compiler flags
 # --------------------------------------------------------------------
-from pytools import flatten
+def flatten(iterable):
+    # http://rightfootin.blogspot.com/2006/09/more-on-python-flatten.html
+    it = iter(iterable)
+    for e in it:
+        if isinstance(e, (list, tuple)):
+            for f in flatten(e):
+                yield f
+        else:
+            yield e
+
 EXTRA_COMPILE_ARGS = list(flatten([eca.split() for eca in [$str{CXXFLAGS}]]))
 
 

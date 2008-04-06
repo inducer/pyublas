@@ -1,0 +1,7 @@
+include src/cpp/pyublas/*.hpp
+include src/wrapper/*.hpp
+include test/*.py
+include configure
+include Makefile.in
+include siteconf.py.in
+include configvars.py
