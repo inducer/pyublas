@@ -28,7 +28,8 @@ def main():
         old_config()
 
     INCLUDE_DIRS = ["src/cpp"] + \
-                   conf["BOOST_INCLUDE_DIRS"]
+                   conf["BOOST_INCLUDE_DIRS"] + \
+                   conf["NUMPY_INC_DIRS"]
     LIBRARY_DIRS = conf["BOOST_LIBRARY_DIRS"]
     LIBRARIES = conf["BPL_LIBRARIES"]
 

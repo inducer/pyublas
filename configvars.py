@@ -8,6 +8,9 @@ vars = [
     ("BOOST_BINDINGS_INC_DIR", None,
         "Include directory for the Boost bindings library"),
     # -------------------------------------------------------------------------
+    ("NUMPY_INC_DIR", None,
+        "Include directory for NumPy"),
+    # -------------------------------------------------------------------------
     ("CXXFLAGS", "-Wno-sign-compare",
         "Any extra C++ compiler options to include"),
     ]
