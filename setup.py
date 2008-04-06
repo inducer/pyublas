@@ -40,7 +40,7 @@ def main():
     OP_EXTRA_DEFINES = {}
 
     setup(name="PyUblas",
-          version="0.90",
+          version="0.91",
           description="Seamless Numpy-UBlas interoperability",
           author=u"Andreas Kloeckner",
           author_email="inform@tiker.net",

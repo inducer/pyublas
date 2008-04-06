@@ -9,3 +9,5 @@ doc/html
 *.pyc
 Makefile
 tags
+MANIFEST
+dist
