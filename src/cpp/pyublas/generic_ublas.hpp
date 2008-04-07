@@ -31,10 +31,7 @@
 
 
 
-namespace generic_ublas {
-  namespace ublas = boost::numeric::ublas;
-  namespace mpl = boost::mpl;
-
+namespace pyublas {
   namespace detail
   {
     class begin_tag { };
@@ -102,16 +99,16 @@ namespace generic_ublas {
 
   // is_vector ----------------------------------------------------------------
   template <typename UblasType>
-    struct is_vector { typedef mpl::false_ type; };
+    struct is_vector { typedef boost::mpl::false_ type; };
 
   template <typename ValueType, typename L>
-    struct is_vector<ublas::vector<ValueType, L> > { typedef mpl::true_ type; };
+    struct is_vector<boost::numeric::ublas::vector<ValueType, L> > { typedef boost::mpl::true_ type; };
   template <typename WrappedVector>
-    struct is_vector<ublas::vector_slice<WrappedVector> > { typedef mpl::true_ type; };
+    struct is_vector<boost::numeric::ublas::vector_slice<WrappedVector> > { typedef boost::mpl::true_ type; };
   template <typename WrappedVector>
-    struct is_vector<ublas::matrix_row<WrappedVector> > { typedef mpl::true_ type; };
+    struct is_vector<boost::numeric::ublas::matrix_row<WrappedVector> > { typedef boost::mpl::true_ type; };
   template <typename WrappedVector>
-    struct is_vector<ublas::matrix_column<WrappedVector> > { typedef mpl::true_ type; };
+    struct is_vector<boost::numeric::ublas::matrix_column<WrappedVector> > { typedef boost::mpl::true_ type; };
 
 
 
@@ -196,7 +193,7 @@ namespace generic_ublas {
 
 
   template <typename MatrixType>
-  class matrix_iterator<MatrixType, mpl::true_> :  public boost::iterator_adaptor<
+  class matrix_iterator<MatrixType, boost::mpl::true_> :  public boost::iterator_adaptor<
     matrix_iterator<MatrixType>, 
     typename MatrixType::iterator,
     typename MatrixType::value_type,
@@ -258,13 +255,13 @@ namespace generic_ublas {
   namespace detail
   {
     template <typename MatrixType>
-    inline minilist<unsigned> getShape(const MatrixType &mat, mpl::false_)
+    inline minilist<unsigned> getShape(const MatrixType &mat, boost::mpl::false_)
     {
       return minilist<unsigned>(mat.size1(), mat.size2());
     }
 
     template <typename MatrixType>
-    inline minilist<unsigned> getShape(const MatrixType &mat, mpl::true_)
+    inline minilist<unsigned> getShape(const MatrixType &mat, boost::mpl::true_)
     {
       return minilist<unsigned>(mat.size());
     }
@@ -282,13 +279,13 @@ namespace generic_ublas {
   namespace detail
   {
     template <typename MatrixType, typename IdxType>
-    inline void setShape(MatrixType &mat, const minilist<IdxType> &shape, mpl::false_)
+    inline void setShape(MatrixType &mat, const minilist<IdxType> &shape, boost::mpl::false_)
     {
       mat.resize(shape[0], shape[1]);
     }
 
     template <typename MatrixType, typename IdxType>
-    inline void setShape(MatrixType &mat, const minilist<IdxType> &shape, mpl::true_)
+    inline void setShape(MatrixType &mat, const minilist<IdxType> &shape, boost::mpl::true_)
     {
       mat.resize(shape[0]);
     }
@@ -308,13 +305,13 @@ namespace generic_ublas {
   namespace detail
   {
     template <typename MatrixType, typename IdxType>
-    inline MatrixType *newWithShape(const minilist<IdxType> &shape, mpl::false_)
+    inline MatrixType *newWithShape(const minilist<IdxType> &shape, boost::mpl::false_)
     {
       return new MatrixType(shape[0], shape[1]);
     }
 
     template <typename MatrixType, typename IdxType>
-    inline MatrixType *newWithShape(const minilist<IdxType> &shape, mpl::true_)
+    inline MatrixType *newWithShape(const minilist<IdxType> &shape, boost::mpl::true_)
     {
       return new MatrixType(shape[0]);
     }
@@ -338,7 +335,7 @@ namespace generic_ublas {
         MatrixType &mat,
         const minilist<IdxType> &index, 
         const typename MatrixType::value_type &value,
-        mpl::false_)
+        boost::mpl::false_)
     {
       mat.insert_element(index[0], index[1], value);
     }
@@ -348,7 +345,7 @@ namespace generic_ublas {
         MatrixType &mat,
         const minilist<IdxType> &index, 
         const typename MatrixType::value_type &value,
-        mpl::true_)
+        boost::mpl::true_)
     {
       mat.insert_element(index[0], value);
     }
@@ -373,7 +370,7 @@ namespace generic_ublas {
         MatrixType &mat,
         const minilist<IdxType> &index, 
         const typename MatrixType::value_type &value,
-        mpl::false_)
+        boost::mpl::false_)
     {
       mat(index[0], index[1]) = value;
     }
@@ -383,7 +380,7 @@ namespace generic_ublas {
         MatrixType &mat,
         const minilist<IdxType> &index, 
         const typename MatrixType::value_type &value,
-        mpl::true_)
+        boost::mpl::true_)
     {
       mat[index[0]] = value;
     }
