@@ -34,7 +34,8 @@ namespace pyublas {
     template<class E> 
     static
     typename boost::numeric::ublas::vector_unary_traits<E, Functor>::result_type
-    apply(const boost::numeric::ublas::vector_expression<E> &e) {
+    apply(const boost::numeric::ublas::vector_expression<E> &e) 
+    {
       typedef typename boost::numeric::ublas::vector_unary_traits<E, Functor>::expression_type expression_type;
       return expression_type (e ());
     }
@@ -42,9 +43,10 @@ namespace pyublas {
     template<class E>
     static
     typename boost::numeric::ublas::matrix_unary1_traits<E, Functor>::result_type
-    apply(const boost::numeric::ublas::matrix_expression<E> &e) {
-        typedef typename boost::numeric::ublas::matrix_unary1_traits<E, Functor>::expression_type expression_type;
-        return expression_type (e ());
+    apply(const boost::numeric::ublas::matrix_expression<E> &e) 
+    {
+      typedef typename boost::numeric::ublas::matrix_unary1_traits<E, Functor>::expression_type expression_type;
+      return expression_type (e ());
     }
   };
 }
