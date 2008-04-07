@@ -20,6 +20,7 @@
 
 
 
+#include <cmath>
 #include <boost/numeric/ublas/functional.hpp>
 #include <boost/numeric/ublas/vector_expression.hpp>
 #include <boost/numeric/ublas/matrix_expression.hpp>
@@ -49,6 +50,21 @@ namespace pyublas {
       return expression_type (e ());
     }
   };
+
+  namespace unary_ops
+  {
+    struct fabs
+    {
+      typedef double value_type;
+      typedef const double &argument_type;
+      typedef double result_type;
+
+      static result_type apply(argument_type x)
+      {
+        return ::std::fabs(x);
+      }
+    };
+  }
 }
 
 
