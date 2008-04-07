@@ -70,11 +70,11 @@ Array wrapBinaryOp(const Array &op1, const Array &op2)
 
 // helpers --------------------------------------------------------------------
 template <typename T>
-generic_ublas::minilist<T> getMinilist(const python::object &tup)
+pyublas::minilist<T> getMinilist(const python::object &tup)
 {
   unsigned len = python::extract<T>(tup.attr("__len__")());
 
-  generic_ublas::minilist<T> result;
+  pyublas::minilist<T> result;
   for (unsigned i = 0; i < len; ++i)
     result.push_back(python::extract<T>(tup[i]));
   return result;
@@ -84,7 +84,7 @@ generic_ublas::minilist<T> getMinilist(const python::object &tup)
 
 
 template <typename T>
-python::tuple getPythonShapeTuple(const generic_ublas::minilist<T> &ml)
+python::tuple getPythonShapeTuple(const pyublas::minilist<T> &ml)
 {
   if (ml.size() == 1)
     return python::make_tuple(ml[0]);
@@ -96,7 +96,7 @@ python::tuple getPythonShapeTuple(const generic_ublas::minilist<T> &ml)
 
 
 template <typename T>
-python::object getPythonIndexTuple(const generic_ublas::minilist<T> &ml)
+python::object getPythonIndexTuple(const pyublas::minilist<T> &ml)
 {
   if (ml.size() == 1)
     return python::object(ml[0]);
@@ -120,7 +120,7 @@ inline unsigned getLength(const MatrixType &m)
 template <typename MatrixType>
 inline python::object getShape(const MatrixType &m)
 { 
-  return getPythonShapeTuple(generic_ublas::getShape(m));
+  return getPythonShapeTuple(pyublas::getShape(m));
 }
 
 
@@ -129,7 +129,7 @@ inline python::object getShape(const MatrixType &m)
 template <typename MatrixType>
 inline void setShape(MatrixType &m, const python::tuple &new_shape)
 { 
-  generic_ublas::setShape(m,getMinilist<typename MatrixType::size_type>(new_shape));
+  pyublas::setShape(m,getMinilist<typename MatrixType::size_type>(new_shape));
 }
 
 
@@ -139,7 +139,7 @@ inline void setShape(MatrixType &m, const python::tuple &new_shape)
 template <typename MatrixType>
 struct python_matrix_key_iterator
 {
-  typename generic_ublas::matrix_iterator<MatrixType> m_iterator, m_end;
+  typename pyublas::matrix_iterator<MatrixType> m_iterator, m_end;
 
   python_matrix_key_iterator *iter()
   {
@@ -162,8 +162,8 @@ struct python_matrix_key_iterator
   static python_matrix_key_iterator *obtain(MatrixType &m)
   {
     std::auto_ptr<python_matrix_key_iterator> it(new python_matrix_key_iterator);
-    it->m_iterator = generic_ublas::begin(m);
-    it->m_end = generic_ublas::end(m);
+    it->m_iterator = pyublas::begin(m);
+    it->m_end = pyublas::end(m);
     return it.release();
   }
 };
@@ -499,7 +499,7 @@ struct sparse_pickle_suite : python::pickle_suite
   python::tuple
   getinitargs(const MatrixType &m)
   {
-    return getPythonShapeTuple(generic_ublas::getShape(m));
+    return getPythonShapeTuple(pyublas::getShape(m));
   }
 
 
@@ -509,9 +509,9 @@ struct sparse_pickle_suite : python::pickle_suite
   python::object
   getstate(MatrixType &m)
   {
-    generic_ublas::matrix_iterator<MatrixType>
-      first = generic_ublas::begin(m),
-      last = generic_ublas::end(m);
+    pyublas::matrix_iterator<MatrixType>
+      first = pyublas::begin(m),
+      last = pyublas::end(m);
     
     python::list result;
     while (first != last)
@@ -534,7 +534,7 @@ struct sparse_pickle_suite : python::pickle_suite
     unsigned len = python::extract<unsigned>(entries.attr("__len__")());
     for (unsigned i = 0; i < len; i++)
     {
-      generic_ublas::insert_element(
+      pyublas::insert_element(
         m,
         getMinilist<typename MatrixType::size_type>(
           python::extract<python::tuple>(entries[i][0])),
@@ -665,13 +665,13 @@ void add_block(MatrixType &mat,
 {
   typedef typename SmallMatrixType::size_type index_t;
 
-  generic_ublas::matrix_iterator<const SmallMatrixType>
-    first = generic_ublas::begin(small_mat),
-    last = generic_ublas::end(small_mat);
+  pyublas::matrix_iterator<const SmallMatrixType>
+    first = pyublas::begin(small_mat),
+    last = pyublas::end(small_mat);
 
   while (first != last)
   {
-    const generic_ublas::minilist<index_t> index = first.index();
+    const pyublas::minilist<index_t> index = first.index();
     add_element_inplace(mat, 
         start_row+index[0], 
         start_column+index[1], 
@@ -706,13 +706,13 @@ void add_scattered(MatrixType &mat,
       || column_indices.size() != small_mat.size2())
     throw std::runtime_error("sizes don't match");
 
-  generic_ublas::matrix_iterator<const SmallMatrixType>
-    first = generic_ublas::begin(small_mat),
-    last = generic_ublas::end(small_mat);
+  pyublas::matrix_iterator<const SmallMatrixType>
+    first = pyublas::begin(small_mat),
+    last = pyublas::end(small_mat);
 
   while (first != last)
   {
-    const generic_ublas::minilist<index_t> index = first.index();
+    const pyublas::minilist<index_t> index = first.index();
     add_element_inplace(mat, 
         row_indices[index[0]], 
         column_indices[index[1]], 
@@ -747,13 +747,13 @@ void add_scattered_with_skip(MatrixType &mat,
       || column_indices.size() != small_mat.size2())
     throw std::runtime_error("sizes don't match");
 
-  generic_ublas::matrix_iterator<const SmallMatrixType>
-    first = generic_ublas::begin(small_mat),
-    last = generic_ublas::end(small_mat);
+  pyublas::matrix_iterator<const SmallMatrixType>
+    first = pyublas::begin(small_mat),
+    last = pyublas::end(small_mat);
 
   while (first != last)
   {
-    const generic_ublas::minilist<index_t> index = first.index();
+    const pyublas::minilist<index_t> index = first.index();
     unsigned dest_row = row_indices[index[0]];
     unsigned dest_col = column_indices[index[1]];
     if (dest_row >= 0 && dest_col >= 0)
@@ -770,9 +770,9 @@ template <typename MatrixType>
 typename MatrixType::value_type
 sum(MatrixType &mat)
 {
-  generic_ublas::matrix_iterator<MatrixType>
-    first = generic_ublas::begin(mat),
-    last = generic_ublas::end(mat);
+  pyublas::matrix_iterator<MatrixType>
+    first = pyublas::begin(mat),
+    last = pyublas::end(mat);
     
   typename MatrixType::value_type result = 0;
   while (first != last)
@@ -787,9 +787,9 @@ template <typename MatrixType>
 typename helpers::decomplexify<typename MatrixType::value_type>::type
 abs_square_sum(MatrixType &mat)
 {
-  generic_ublas::matrix_iterator<MatrixType>
-    first = generic_ublas::begin(mat),
-    last = generic_ublas::end(mat);
+  pyublas::matrix_iterator<MatrixType>
+    first = pyublas::begin(mat),
+    last = pyublas::end(mat);
     
   typedef 
     typename helpers::decomplexify<typename MatrixType::value_type>::type 

@@ -36,7 +36,7 @@ namespace ublas = boost::numeric::ublas;
 
 
 
-using generic_ublas::is_vector;
+using pyublas::is_vector;
 
 
 
