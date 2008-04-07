@@ -286,6 +286,91 @@ namespace pyublas
 
 
 
+  // matrix helper functions --------------------------------------------------
+  inline bool is_row_major(boost::numeric::ublas::row_major_tag)
+  {
+    return true;
+  }
+  inline bool is_row_major(boost::numeric::ublas::column_major_tag)
+  {
+    return false;
+  }
+
+  template <class OCat, class T>
+  typename numpy_array<T>::size_type get_array_size1(numpy_array<T> const &ary)
+  {
+    typedef numpy_array<T> mat_type;
+
+    if (PyArray_NDIM(ary.handle().get()) != 2)
+      throw std::runtime_error("numpy array has dimension != 2");
+
+    if (PyArray_STRIDE(ary.handle().get(), 1) 
+        == PyArray_ITEMSIZE(ary.handle().get()))
+    {
+      // row-major
+      if (!is_row_major(OCat()))
+        throw std::runtime_error("input array is not row-major (like the target type)");
+    }
+    else if (PyArray_STRIDE(ary.handle().get(), 0) 
+        == PyArray_ITEMSIZE(ary.handle().get()))
+    {
+      // column-major
+      if (is_row_major(OCat()))
+        throw std::runtime_error("input array is not column-major (like the target type)");
+    }
+    else
+        throw std::runtime_error("input array is does not have dimension with stride==1");
+
+    return PyArray_DIM(ary.handle().get(), 0);
+  }
+
+  template <class T>
+  typename numpy_array<T>::size_type get_array_size2(numpy_array<T> const &ary)
+  {
+    // checking is done in size1()
+    return PyArray_DIM(ary.handle().get(), 1);
+  }
+
+  template<class T, class L = boost::numeric::ublas::row_major>
+  class numpy_matrix;
+
+  template <class T, class L>
+  boost::python::handle<> matrix_to_python(numpy_matrix<T, L> const &mat)
+  {
+    typedef numpy_matrix<T, L> mat_type;
+    boost::python::handle<> orig_handle = mat.data().handle();
+
+    npy_intp dims[] = { mat.size1(), mat.size2() };
+    boost::python::handle<> result;
+
+    if (is_row_major(typename mat_type::orientation_category()))
+    {
+      result = boost::python::handle<>(PyArray_New(
+          &PyArray_Type, 2, dims, 
+          get_typenum(typename mat_type::value_type()), 
+          /*strides*/0, 
+          PyArray_DATA(orig_handle.get()),
+          /* ? */ 0, 
+          NPY_CARRAY, NULL));
+    }
+    else
+    {
+      result = boost::python::handle<>(PyArray_New(
+          &PyArray_Type, 2, dims, 
+          get_typenum(typename mat_type::value_type()), 
+          /*strides*/0, 
+          PyArray_DATA(orig_handle.get()),
+          /* ? */ 0, 
+          NPY_FARRAY, NULL));
+    }
+
+    PyArray_BASE(result.get()) = boost::python::handle<>(orig_handle).release();
+    return result;
+  }
+
+
+
+  // derived vector types -----------------------------------------------------
   template <class T>
   class numpy_vector
   : public boost::numeric::ublas::vector<T, numpy_array<T> >
@@ -341,19 +426,9 @@ namespace pyublas
 
 
 
-  inline bool is_row_major(boost::numeric::ublas::row_major_tag)
-  {
-    return true;
-  }
-  inline bool is_row_major(boost::numeric::ublas::column_major_tag)
-  {
-    return false;
-  }
-
-
-
-
-  template<class T, class L = boost::numeric::ublas::row_major>
+  // derived matrix types -----------------------------------------------------
+  template<class T, class L/* = boost::numeric::ublas::row_major */> 
+    /* default arg declared in forward decl */
   class numpy_matrix
   : public boost::numeric::ublas::matrix<T, L, numpy_array<T> > 
   {
@@ -361,40 +436,6 @@ namespace pyublas
       typedef 
         boost::numeric::ublas::matrix<T, L, numpy_array<T> >
         super;
-
-
-      static typename super::size_type 
-        get_array_size1(typename super::array_type const &ary)
-      {
-        if (PyArray_NDIM(ary.handle().get()) != 2)
-          throw std::runtime_error("numpy array has dimension != 2");
-
-        if (PyArray_STRIDE(ary.handle().get(), 1) 
-            == PyArray_ITEMSIZE(ary.handle().get()))
-        {
-          // row-major
-          if (!is_row_major(typename super::orientation_category()))
-            throw std::runtime_error("input array is not row-major (like the target type)");
-        }
-        else if (PyArray_STRIDE(ary.handle().get(), 0) 
-            == PyArray_ITEMSIZE(ary.handle().get()))
-        {
-          // column-major
-          if (is_row_major(typename super::orientation_category()))
-            throw std::runtime_error("input array is not column-major (like the target type)");
-        }
-        else
-            throw std::runtime_error("input array is does not have dimension with stride==1");
-
-        return PyArray_DIM(ary.handle().get(), 0);
-      }
-
-      static typename super::size_type 
-        get_array_size2(typename super::array_type const &ary)
-      {
-        // checking is done in size1()
-        return PyArray_DIM(ary.handle().get(), 1);
-      }
 
     public:
       numpy_matrix ()
@@ -423,7 +464,10 @@ namespace pyublas
       // observe that PyObject handles are implicitly convertible
       // to numpy_array
       numpy_matrix(const typename super::array_type &data)
-      : super(get_array_size1(data), get_array_size2(data), data)
+      : super(
+          get_array_size1<typename super::orientation_category>(data),
+          get_array_size2(data), 
+          data)
       { }
 
       numpy_matrix(const numpy_matrix &m)
@@ -443,41 +487,13 @@ namespace pyublas
       { return *this; }
 
       boost::python::handle<> to_python() const
-      {
-        boost::python::handle<> orig_handle = this->data().handle();
-
-        npy_intp dims[] = { this->size1(), this->size2() };
-        boost::python::handle<> result;
-
-        if (is_row_major(typename super::orientation_category()))
-        {
-          result = boost::python::handle<>(PyArray_New(
-              &PyArray_Type, 2, dims, 
-              get_typenum(typename super::value_type()), 
-              /*strides*/0, 
-              PyArray_DATA(orig_handle.get()),
-              /* ? */ 0, 
-              NPY_CARRAY, NULL));
-        }
-        else
-        {
-          result = boost::python::handle<>(PyArray_New(
-              &PyArray_Type, 2, dims, 
-              get_typenum(typename super::value_type()), 
-              /*strides*/0, 
-              PyArray_DATA(orig_handle.get()),
-              /* ? */ 0, 
-              NPY_FARRAY, NULL));
-        }
-
-        PyArray_BASE(result.get()) = boost::python::handle<>(orig_handle).release();
-        return result;
-      }
+      { return matrix_to_python(*this); }
   };
 
 
 
 
+  // data member treatment ----------------------------------------------------
   template <class T, class C>
   class by_value_rw_member_visitor 
   : public boost::python::def_visitor<by_value_rw_member_visitor<T, C> >
@@ -545,6 +561,7 @@ namespace pyublas
 
 
 
+// interaction with boost bindings --------------------------------------------
 namespace boost { namespace numeric { namespace bindings { namespace traits {
   template <typename T, typename V>
   struct vector_detail_traits< pyublas::numpy_array<T>, V > 
