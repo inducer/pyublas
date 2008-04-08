@@ -189,10 +189,17 @@ void pyublas_expose_converters()
 {
   import_array();
 
-  expose_converters<int>();
-  expose_converters<long int>();
-  expose_converters<float>();
-  expose_converters<double>();
+  expose_converters<npy_byte>();
+  expose_converters<npy_short>();
+  expose_converters<npy_ushort>();
+  expose_converters<npy_int>();
+  expose_converters<npy_uint>();
+  expose_converters<npy_long>();
+  expose_converters<npy_ulong>();
+  expose_converters<npy_longlong>();
+  expose_converters<npy_ulonglong>();
+  expose_converters<npy_float>();
+  expose_converters<npy_double>();
   expose_converters<std::complex<float> >();
   expose_converters<std::complex<double> >();
 }
