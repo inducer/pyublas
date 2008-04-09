@@ -192,13 +192,13 @@ namespace pyublas
       // Element access
       const_reference operator [] (size_type i) const 
       {
-        BOOST_UBLAS_CHECK (i < size_, bad_index ());
+        BOOST_UBLAS_CHECK(i < size(), boost::numeric::ublas::bad_index());
         return data()[i];
       }
 
       reference operator [] (size_type i) 
       {
-        BOOST_UBLAS_CHECK (i < size_, bad_index ());
+        BOOST_UBLAS_CHECK(i < size(), boost::numeric::ublas::bad_index());
         return data()[i];
       }
 
