@@ -71,6 +71,16 @@ namespace
         return py::handle<>(v.data().handle()).release();
       }
     };
+
+    template <class OriginalType>
+    struct indirect_to_python
+    {
+      static PyObject* convert(OriginalType const &v)
+      {
+        tgt_type copied_v(v);
+        return copied_v.to_python().release();
+      }
+    };
   };
 
 
@@ -130,6 +140,16 @@ namespace
         return v.to_python().release();
       }
     };
+
+    template <class OriginalType>
+    struct indirect_to_python
+    {
+      static PyObject* convert(OriginalType const &v)
+      {
+        tgt_type copied_v(v);
+        return copied_v.to_python().release();
+      }
+    };
   };
 
 
@@ -152,7 +172,6 @@ namespace
 
     py::to_python_converter<
       typename Converter::tgt_type, typename Converter::to_python>();
-
   }
 
 
@@ -172,13 +191,46 @@ namespace
     typedef numpy_matrix<T, ublas::row_major> rm_mat;
     typedef numpy_matrix<T, ublas::column_major> cm_mat;
 
-    register_array_converter<vector_converter<vec> >();
-    register_array_converter<matrix_converter<cm_mat> >();
-    register_array_converter<matrix_converter<rm_mat> >();
+    typedef vector_converter<vec> vec_converter;
+    typedef matrix_converter<cm_mat> cm_mat_converter;
+    typedef matrix_converter<rm_mat> rm_mat_converter;
+    register_array_converter<vec_converter>();
+    register_array_converter<cm_mat_converter>();
+    register_array_converter<rm_mat_converter>();
 
     py::def("dblmat", dodbl<rm_mat>);
     py::def("dblmat", dodbl<cm_mat>);
     py::def("dblvec", dodbl<vec>);
+
+#define EXPOSE_TO_PYTHON_INDIRECT(CONVERTER, TP) \
+    py::to_python_converter< \
+      TP, typename CONVERTER::template indirect_to_python<TP> >()
+
+    {
+      typedef ublas::vector<T> cl;
+      py::to_python_converter<cl, 
+        typename vec_converter::template indirect_to_python<cl> >();
+    }
+    {
+      typedef ublas::bounded_vector<T, 3> cl;
+      py::to_python_converter<cl, 
+        typename vec_converter::template indirect_to_python<cl> >();
+    }
+    {
+      typedef ublas::matrix<T, ublas::row_major> cl;
+      py::to_python_converter<cl, 
+        typename rm_mat_converter::template indirect_to_python<cl> >();
+    }
+    {
+      typedef ublas::matrix<T, ublas::column_major> cl;
+      py::to_python_converter<cl, 
+        typename cm_mat_converter::template indirect_to_python<cl> >();
+    }
+
+    py::implicitly_convertible<vec, ublas::vector<T> >();
+    py::implicitly_convertible<vec, ublas::bounded_vector<T, 3> >();
+    py::implicitly_convertible<rm_mat, ublas::matrix<T, ublas::row_major> >();
+    py::implicitly_convertible<cm_mat, ublas::matrix<T, ublas::column_major> >();
   }
 }
 
