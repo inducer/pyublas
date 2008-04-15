@@ -3,7 +3,9 @@
 # See documentation for hints.
 # --------------------------------------------------------------------
 
-PYUBLAS_CONF_TEMPLATE_VERSION = 1
+PYUBLAS_CONF_TEMPLATE_VERSION = 2
+
+WITH_SPARSE_WRAPPERS = ${WITH_SPARSE_WRAPPERS}
 
 # --------------------------------------------------------------------
 # Path options

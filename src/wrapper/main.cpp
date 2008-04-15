@@ -25,9 +25,28 @@ void pyublas_expose_sparse_execute();
 
 
 
+namespace
+{
+  bool has_sparse_wrappers()
+  {
+#ifdef HAVE_SPARSE_WRAPPERS
+    return true;
+#else
+    return false;
+#endif
+  }
+}
+
+
+
+
 BOOST_PYTHON_MODULE(_internal)
 {
   pyublas_expose_converters();
+#ifdef HAVE_SPARSE_WRAPPERS
   pyublas_expose_sparse_build();
   pyublas_expose_sparse_execute();
+#endif
+
+  boost::python::def("has_sparse_wrappers", has_sparse_wrappers);
 }

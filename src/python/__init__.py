@@ -4,6 +4,11 @@ import pyublas._internal
 
 
 
+has_sparse_wrappers = pyublas._internal.has_sparse_wrappers
+
+
+
+
 # type code-related  -----------------------------------------------------------
 def _dtype_name(dtype):
     if dtype in [numpy.float64, numpy.float, float, numpy.dtype(numpy.float64)]:
@@ -70,8 +75,12 @@ DTYPES = [ float, complex ]
 
 
 
-SparseBuildMatrix = ParameterizedType("SparseBuildMatrix")
-SparseExecuteMatrix = ParameterizedType("SparseExecuteMatrix")
+if has_sparse_wrappers():
+    SparseBuildMatrix = ParameterizedType("SparseBuildMatrix")
+    SparseExecuteMatrix = ParameterizedType("SparseExecuteMatrix")
+else:
+    SparseBuildMatrix = None
+    SparseExecuteMatrix = None
 
 
 
@@ -196,139 +205,159 @@ def _add_python_methods():
 
 
 
-_add_python_methods()
+if has_sparse_wrappers():
+    _add_python_methods()
 
 
 
 
 # public interface  ------------------------------------------------------------
-def zeros(shape, dtype=float, flavor=SparseBuildMatrix):
-    """Return a zero-filled array."""
-    return flavor(dtype)(*shape)
+if has_sparse_wrappers():
+    def zeros(shape, dtype=float, flavor=SparseBuildMatrix):
+        """Return a zero-filled array."""
+        return flavor(dtype)(*shape)
 
 
 
 
 
-def asarray(data, dtype=None, flavor=None):
-    """Construct an array from data.
-    
-    Same as array(), except that a copy is made only when necessary.
-    """
+    def asarray(data, dtype=None, flavor=None):
+        """Construct an array from data.
+        
+        Same as array(), except that a copy is made only when necessary.
+        """
 
-    try:
-        given_flavor = data.flavor
-        given_dtype = data.dtype
-    except AttributeError:
-        # not handling a pylinear array--leave that to the general array
-        # constructor.
-        raise ValueError, "asarray's first argument must be a PyUblas array"
+        try:
+            given_flavor = data.flavor
+            given_dtype = data.dtype
+        except AttributeError:
+            # not handling a pylinear array--leave that to the general array
+            # constructor.
+            raise ValueError, "asarray's first argument must be a PyUblas array"
 
-    if flavor is None:
-        flavor = given_flavor
+        if flavor is None:
+            flavor = given_flavor
 
-    if dtype is None:
-        dtype = given_dtype
+        if dtype is None:
+            dtype = given_dtype
 
-    if given_dtype == dtype and given_flavor == flavor:
-        return data
+        if given_dtype == dtype and given_flavor == flavor:
+            return data
 
-    return flavor(dtype)(data)
-
-
-
-
-def sparse(mapping, shape=None, dtype=None, flavor=SparseBuildMatrix):
-    """Create a sparse Array from (two-level) nested
-    mappings (e.g. dictionaries).
-
-    Takes into account the given dtype  and  flavor.   If  None  are  specified,
-    the   minimum   that   will   accomodate   the   given   data   are    used.
-    If shape is unspecified, the smallest size  that  can  accomodate  the  data
-    is used.
-
-    See array() for valid dtype and flavors.
-    """
-
-    def get_biggest_type(mapping, prev_biggest_type=float):
-        for row in mapping.values():
-            for val in row.values():
-                if isinstance(val, complex):
-                    prev_biggest_type = complex
-        return prev_biggest_type
-
-    if dtype is None:
-        dtype = get_biggest_type(mapping)
-
-    if shape is None:
-        height = max(mapping.keys()) + 1
-        width = 1
-        for row in mapping.values():
-            width = max(width, max(row.keys())+1)
-
-        shape = height, width
-
-    mat = flavor(dtype)(shape[0], shape[1])
-    for i, row in mapping.iteritems():
-        for j, val in row.iteritems():
-            mat[i,j] = val
-    return mat
+        return flavor(dtype)(data)
 
 
 
 
-def permutation_matrix(to_indices=None, from_indices=None, h=None, w=None,
-        dtype=float, flavor=SparseExecuteMatrix):
-    """Return a permutation matrix.
+    def sparse(mapping, shape=None, dtype=None, flavor=SparseBuildMatrix):
+        """Create a sparse Array from (two-level) nested
+        mappings (e.g. dictionaries).
 
-    If to_indices is specified, the resulting permutation 
-    matrix P satisfies the condition
+        Takes into account the given dtype  and  flavor.   If  None  are  specified,
+        the   minimum   that   will   accomodate   the   given   data   are    used.
+        If shape is unspecified, the smallest size  that  can  accomodate  the  data
+        is used.
 
-    P * e[i] = e[to_indices[i]] for i=1,...,len(to_indices)
+        See array() for valid dtype and flavors.
+        """
 
-    where e[i] is the i-th unit vector. The height of P is 
-    determined either implicitly by the maximum of to_indices
-    or explicitly by the parameter h.
+        def get_biggest_type(mapping, prev_biggest_type=float):
+            for row in mapping.values():
+                for val in row.values():
+                    if isinstance(val, complex):
+                        prev_biggest_type = complex
+            return prev_biggest_type
 
-    If from_indices is specified, the resulting permutation 
-    matrix P satisfies the condition
+        if dtype is None:
+            dtype = get_biggest_type(mapping)
 
-    P * e[from_indices[i]] = e[i] for i=1,...,len(from_indices)
-    
-    where e[i] is the i-th unit vector. The width of P is
-    determined either implicitly by the maximum of from_indices
-    of explicitly by the parameter w.
+        if shape is None:
+            height = max(mapping.keys()) + 1
+            width = 1
+            for row in mapping.values():
+                width = max(width, max(row.keys())+1)
 
-    If both to_indices and from_indices is specified, a ValueError
-    exception is raised.
-    """
-    if to_indices is not None and from_indices is not None:
-        raise ValueError, "only one of to_indices and from_indices may " \
-                "be specified"
+            shape = height, width
 
-    if to_indices is not None:
-        if h is None:
-            h = max(to_indices)+1
-        w = len(to_indices)
-    else:
-        if w is None:
-            w = max(from_indices)+1
-        h = len(from_indices)
-
-    result = zeros((h,w), flavor=SparseBuildMatrix, dtype=dtype)
-
-    if to_indices is not None:
-        for j, i in enumerate(to_indices):
-            result.add_element(i, j, 1)
-    else:
-        for i, j in enumerate(from_indices):
-            result.add_element(i, j, 1)
-
-    return asarray(result, flavor=flavor)
+        mat = flavor(dtype)(shape[0], shape[1])
+        for i, row in mapping.iteritems():
+            for j, val in row.iteritems():
+                mat[i,j] = val
+        return mat
 
 
 
 
+    def permutation_matrix(to_indices=None, from_indices=None, h=None, w=None,
+            dtype=float, flavor=SparseExecuteMatrix):
+        """Return a permutation matrix.
+
+        If to_indices is specified, the resulting permutation 
+        matrix P satisfies the condition
+
+        P * e[i] = e[to_indices[i]] for i=1,...,len(to_indices)
+
+        where e[i] is the i-th unit vector. The height of P is 
+        determined either implicitly by the maximum of to_indices
+        or explicitly by the parameter h.
+
+        If from_indices is specified, the resulting permutation 
+        matrix P satisfies the condition
+
+        P * e[from_indices[i]] = e[i] for i=1,...,len(from_indices)
+        
+        where e[i] is the i-th unit vector. The width of P is
+        determined either implicitly by the maximum of from_indices
+        of explicitly by the parameter w.
+
+        If both to_indices and from_indices is specified, a ValueError
+        exception is raised.
+        """
+        if to_indices is not None and from_indices is not None:
+            raise ValueError, "only one of to_indices and from_indices may " \
+                    "be specified"
+
+        if to_indices is not None:
+            if h is None:
+                h = max(to_indices)+1
+            w = len(to_indices)
+        else:
+            if w is None:
+                w = max(from_indices)+1
+            h = len(from_indices)
+
+        result = zeros((h,w), flavor=SparseBuildMatrix, dtype=dtype)
+
+        if to_indices is not None:
+            for j, i in enumerate(to_indices):
+                result.add_element(i, j, 1)
+        else:
+            for i, j in enumerate(from_indices):
+                result.add_element(i, j, 1)
+
+        return asarray(result, flavor=flavor)
+else:
+    def zeros(shape, dtype=float, flavor=SparseBuildMatrix):
+        """Unavailable."""
+        return None
+
+    def asarray(data, dtype=None, flavor=None):
+        """Unavailable."""
+        return None
+
+    def sparse(mapping, shape=None, dtype=None, flavor=SparseBuildMatrix):
+        """Unavailable."""
+        return None
+
+    def permutation_matrix(to_indices=None, from_indices=None, h=None, w=None,
+            dtype=float, flavor=SparseExecuteMatrix):
+        """Unavailable."""
+        return None
+
+
+
+
+# C++ interface utilities -----------------------------------------------------
 def why_not(val, dtype=float, matrix=False, row_major=True):
     from warnings import warn
     import numpy

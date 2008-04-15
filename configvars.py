@@ -11,6 +11,9 @@ vars = [
     ("NUMPY_INC_DIR", None,
         "Include directory for NumPy"),
     # -------------------------------------------------------------------------
+    ("WITH_SPARSE_WRAPPERS", False,
+        "Any extra C++ compiler options to include"),
+    # -------------------------------------------------------------------------
     ("CXXFLAGS", "-Wno-sign-compare",
         "Any extra C++ compiler options to include"),
     ]

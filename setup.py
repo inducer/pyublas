@@ -24,7 +24,7 @@ def main():
     if "PYUBLAS_CONF_TEMPLATE_VERSION" not in conf:
         old_config()
 
-    if conf["PYUBLAS_CONF_TEMPLATE_VERSION"] != 1:
+    if conf["PYUBLAS_CONF_TEMPLATE_VERSION"] != 2:
         old_config()
 
     INCLUDE_DIRS = ["src/cpp"] + \
@@ -37,7 +37,19 @@ def main():
     EXTRA_LIBRARY_DIRS = []
     EXTRA_LIBRARIES = []
 
-    OP_EXTRA_DEFINES = {}
+    EXTRA_DEFINES = {}
+
+    ext_src = [
+            "src/wrapper/main.cpp",
+            "src/wrapper/converters.cpp",
+            ] 
+
+    if conf["WITH_SPARSE_WRAPPERS"]:
+        ext_src += [
+                "src/wrapper/sparse_build.cpp",
+                "src/wrapper/sparse_execute.cpp",
+                ]
+        EXTRA_DEFINES["HAVE_SPARSE_WRAPPERS"] = 1
 
     setup(name="PyUblas",
           version="0.91",
@@ -66,15 +78,11 @@ def main():
               'Topic :: Text Processing',
               ],
           ext_modules=[ Extension("_internal", 
-                                  [
-                                      "src/wrapper/main.cpp",
-                                      "src/wrapper/converters.cpp",
-                                      "src/wrapper/sparse_build.cpp",
-                                      "src/wrapper/sparse_execute.cpp"
-                                   ],
+                                  ext_src,
                                   include_dirs=INCLUDE_DIRS+EXTRA_INCLUDE_DIRS,
                                   library_dirs=LIBRARY_DIRS+EXTRA_LIBRARY_DIRS,
                                   libraries=LIBRARIES+EXTRA_LIBRARIES,
+                                  define_macros=EXTRA_DEFINES.items(),
                                   extra_compile_args=conf["EXTRA_COMPILE_ARGS"],
                                   ),
                         ],
