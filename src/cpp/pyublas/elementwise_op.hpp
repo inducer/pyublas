@@ -148,6 +148,81 @@ namespace pyublas {
         }
     };
   }
+
+
+
+  
+  // square sum ---------------------------------------------------------------
+  template<class V>
+  struct vector_square_sum : 
+    public boost::numeric::ublas::vector_scalar_real_unary_functor<V> 
+  {
+    private:
+      typedef boost::numeric::ublas::vector_scalar_real_unary_functor<V> super;
+
+    public:
+      typedef typename super::real_type real_type;
+      typedef typename super::value_type value_type;
+      typedef typename super::result_type result_type;
+
+      template<class E>
+      static result_type 
+      apply(const boost::numeric::ublas::vector_expression<E> &e) 
+      {
+        using namespace boost::numeric::ublas;
+
+        real_type t = real_type ();
+        typedef typename E::size_type vector_size_type;
+        vector_size_type size (e ().size ());
+        for (vector_size_type i = 0; i < size; ++ i) {
+          typename super::real_type u (
+              type_traits<value_type>::norm_2 (e () (i)));
+          t +=  u * u;
+        }
+        return t;
+      }
+
+      // Dense case
+      template<class D, class I>
+      static result_type apply(D size, I it) 
+      {
+        using namespace boost::numeric::ublas;
+
+        real_type t = real_type ();
+        while (-- size >= 0) {
+          real_type u (type_traits<value_type>::norm_2 (*it));
+          t +=  u * u;
+          ++ it;
+        }
+        return t;
+      }
+
+      // Sparse case
+      template<class I>
+      static result_type apply(I it, const I &it_end) 
+      {
+        using namespace boost::numeric::ublas;
+
+        real_type t = real_type ();
+        while (it != it_end) {
+          real_type u (type_traits<value_type>::norm_2 (*it));
+          t +=  u * u;
+          ++ it;
+        }
+        return t;
+      }
+  };
+
+  template<class E>
+  inline 
+  typename boost::numeric::ublas::vector_scalar_unary_traits<E, vector_square_sum<E> >::result_type
+  square_sum(const boost::numeric::ublas::vector_expression<E> &e) 
+  {
+    typedef typename boost::numeric::ublas::
+      vector_scalar_unary_traits<E, vector_square_sum<E> >::expression_type 
+      expression_type;
+    return expression_type(e());
+  }
 }
 
 
