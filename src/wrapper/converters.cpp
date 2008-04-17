@@ -33,7 +33,7 @@ namespace ublas = boost::numeric::ublas;
 namespace
 {
   template <class TargetType>
-  struct converter_base
+  struct array_converter_base
   {
     typedef typename TargetType::value_type value_type;
     typedef TargetType target_type;
@@ -86,10 +86,10 @@ namespace
 
 
   template <class VectorType>
-  struct vector_converter : public converter_base<VectorType>
+  struct vector_converter : public array_converter_base<VectorType>
   {
     private:
-      typedef converter_base<VectorType> super;
+      typedef array_converter_base<VectorType> super;
 
     public:
       static void *check(PyObject* obj)
@@ -111,10 +111,10 @@ namespace
 
 
   template <class MatrixType>
-  struct matrix_converter : public converter_base<MatrixType>
+  struct matrix_converter : public array_converter_base<MatrixType>
   {
     private:
-      typedef converter_base<MatrixType> super;
+      typedef array_converter_base<MatrixType> super;
 
     public:
       static void *check(PyObject* obj)
@@ -191,10 +191,54 @@ namespace
 
 
 
+  // array scalars ------------------------------------------------------------
+  template <class T>
+  const PyTypeObject *get_array_scalar_typeobj()
+  { 
+    return (PyTypeObject *) PyArray_TypeObjectFromType(get_typenum(T())); 
+  }
 
+  template <class T>
+  void *check_array_scalar(PyObject *obj)
+  { 
+    if (obj->ob_type == get_array_scalar_typeobj<T>())
+      return obj; 
+    else
+      return 0;
+  }
+
+  template <class T>
+  static void convert_array_scalar(
+      PyObject* obj, 
+      py::converter::rvalue_from_python_stage1_data* data)
+  {
+    void* storage = ((py::converter::rvalue_from_python_storage<T>*)data)->storage.bytes;
+
+    // no constructor needed, only dealing with POD types
+    PyArray_ScalarAsCtype(obj, reinterpret_cast<T *>(storage));
+
+    // record successful construction
+    data->convertible = storage;
+  }
+
+
+
+
+  // main exposer -------------------------------------------------------------
   template <class T>
   void expose_converters()
   {
+    // conversion of array scalars
+    py::converter::registry::push_back(
+        check_array_scalar<T>
+        , convert_array_scalar<T>
+        , py::type_id<T>()
+#ifndef BOOST_PYTHON_NO_PY_SIGNATURES
+        , get_array_scalar_typeobj<T>
+#endif
+        );
+
+    // conversion of arrays
     typedef numpy_vector<T> vec;
     typedef numpy_matrix<T, ublas::row_major> rm_mat;
     typedef numpy_matrix<T, ublas::column_major> cm_mat;
