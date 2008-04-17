@@ -32,33 +32,32 @@ namespace ublas = boost::numeric::ublas;
 
 namespace
 {
-  template <class VectorType>
-  struct vector_converter
+  template <class TargetType>
+  struct converter_base
   {
-    typedef typename VectorType::value_type value_type;
-    typedef VectorType tgt_type;
-
-    static void *check(PyObject* obj)
-    {
-      if (!PyArray_Check(obj))
-        return 0;
-      if (PyArray_TYPE(obj) != get_typenum(value_type()))
-        return 0;
-      if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED))
-        return 0;
-      if (PyArray_CHKFLAGS(obj, NPY_NOTSWAPPED))
-        return 0;
-
-      return obj;
-    }
+    typedef typename TargetType::value_type value_type;
+    typedef TargetType target_type;
 
     static void construct(
         PyObject* obj, 
         py::converter::rvalue_from_python_stage1_data* data)
     {
-      void* storage = ((py::converter::rvalue_from_python_storage<tgt_type>*)data)->storage.bytes;
+      void* storage = ((py::converter::rvalue_from_python_storage<target_type>*)data)->storage.bytes;
 
-      new (storage) tgt_type(py::handle<>(py::borrowed(obj)));
+      new (storage) target_type(py::handle<>(py::borrowed(obj)));
+
+      // record successful construction
+      data->convertible = storage;
+    }
+
+    template <class RealTgtType>
+    static void construct_indirect(
+        PyObject* obj, 
+        py::converter::rvalue_from_python_stage1_data* data)
+    {
+      void* storage = ((py::converter::rvalue_from_python_storage<target_type>*)data)->storage.bytes;
+
+      new (storage) RealTgtType(target_type(py::handle<>(py::borrowed(obj))));
 
       // record successful construction
       data->convertible = storage;
@@ -66,76 +65,7 @@ namespace
 
     struct to_python
     {
-      static PyObject* convert(tgt_type const &v)
-      {
-        return py::handle<>(v.data().handle()).release();
-      }
-    };
-
-    template <class OriginalType>
-    struct indirect_to_python
-    {
-      static PyObject* convert(OriginalType const &v)
-      {
-        tgt_type copied_v(v);
-        return copied_v.to_python().release();
-      }
-    };
-  };
-
-
-
-
-  template <class MatrixType>
-  struct matrix_converter
-  {
-    typedef typename MatrixType::value_type value_type;
-    typedef MatrixType tgt_type;
-
-    static void *check(PyObject* obj)
-    {
-      if (!PyArray_Check(obj))
-        return 0;
-      if (PyArray_TYPE(obj) != get_typenum(value_type()))
-        return 0;
-      if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED))
-        return 0;
-      if (PyArray_NDIM(obj) != 2)
-        return 0;
-      if (PyArray_STRIDE(obj, 1) == PyArray_ITEMSIZE(obj))
-      {
-        if (!is_row_major(typename MatrixType::orientation_category()))
-          return 0;
-      }
-      else if (PyArray_STRIDE(obj, 0) == PyArray_ITEMSIZE(obj))
-      {
-        if (is_row_major(typename MatrixType::orientation_category()))
-          return 0;
-      }
-      else
-      {
-        // no dim has stride == 1
-        return 0;
-      }
-
-      return obj;
-    }
-
-    static void construct(
-        PyObject* obj, 
-        py::converter::rvalue_from_python_stage1_data* data)
-    {
-      void* storage = ((py::converter::rvalue_from_python_storage<tgt_type>*)data)->storage.bytes;
-
-      new (storage) tgt_type(py::handle<>(py::borrowed(obj)));
-
-      // record successful construction
-      data->convertible = storage;
-    }
-
-    struct to_python
-    {
-      static PyObject* convert(tgt_type const &v)
+      static PyObject* convert(target_type const &v)
       {
         return v.to_python().release();
       }
@@ -146,10 +76,76 @@ namespace
     {
       static PyObject* convert(OriginalType const &v)
       {
-        tgt_type copied_v(v);
+        target_type copied_v(v);
         return copied_v.to_python().release();
       }
     };
+  };
+
+
+
+
+  template <class VectorType>
+  struct vector_converter : public converter_base<VectorType>
+  {
+    private:
+      typedef converter_base<VectorType> super;
+
+    public:
+      static void *check(PyObject* obj)
+      {
+        if (!PyArray_Check(obj))
+          return 0;
+        if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
+          return 0;
+        if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED))
+          return 0;
+        if (PyArray_CHKFLAGS(obj, NPY_NOTSWAPPED))
+          return 0;
+
+        return obj;
+      }
+  };
+
+
+
+
+  template <class MatrixType>
+  struct matrix_converter : public converter_base<MatrixType>
+  {
+    private:
+      typedef converter_base<MatrixType> super;
+
+    public:
+      static void *check(PyObject* obj)
+      {
+        if (!PyArray_Check(obj))
+          return 0;
+        if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
+          return 0;
+        if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED))
+          return 0;
+        if (PyArray_NDIM(obj) != 2)
+          return 0;
+        if (PyArray_STRIDE(obj, 1) == PyArray_ITEMSIZE(obj))
+        {
+          if (!is_row_major(typename MatrixType::orientation_category()))
+            return 0;
+        }
+        else if (PyArray_STRIDE(obj, 0) == PyArray_ITEMSIZE(obj))
+        {
+          if (is_row_major(typename MatrixType::orientation_category()))
+            return 0;
+        }
+        else
+        {
+          // no dim has stride == 1
+          return 0;
+        }
+
+        return obj;
+      }
+
   };
 
 
@@ -164,25 +160,37 @@ namespace
     py::converter::registry::push_back(
         &Converter::check
         , &Converter::construct
-        , py::type_id<typename Converter::tgt_type>()
+        , py::type_id<typename Converter::target_type>()
 #ifndef BOOST_PYTHON_NO_PY_SIGNATURES
         , &get_PyArray_Type
 #endif
         );
 
     py::to_python_converter<
-      typename Converter::tgt_type, typename Converter::to_python>();
+      typename Converter::target_type, typename Converter::to_python>();
   }
 
 
 
 
-  template<class T>
-  T dodbl(T const &x)
+  template <class Converter, class RealTgtType>
+  void register_indirect_array_converter()
   {
-    std::cout << x << std::endl;
-    return (typename T::value_type)(2)*x;
+    py::converter::registry::push_back(
+        &Converter::check
+        , &Converter::template construct_indirect<RealTgtType>
+        , py::type_id<RealTgtType>()
+#ifndef BOOST_PYTHON_NO_PY_SIGNATURES
+        , &get_PyArray_Type
+#endif
+        );
+
+    py::to_python_converter<
+      RealTgtType, typename Converter::template indirect_to_python<RealTgtType> >();
   }
+
+
+
 
   template <class T>
   void expose_converters()
@@ -194,43 +202,21 @@ namespace
     typedef vector_converter<vec> vec_converter;
     typedef matrix_converter<cm_mat> cm_mat_converter;
     typedef matrix_converter<rm_mat> rm_mat_converter;
+
     register_array_converter<vec_converter>();
     register_array_converter<cm_mat_converter>();
     register_array_converter<rm_mat_converter>();
 
-    py::def("dblmat", dodbl<rm_mat>);
-    py::def("dblmat", dodbl<cm_mat>);
-    py::def("dblvec", dodbl<vec>);
-
-#define EXPOSE_TO_PYTHON_INDIRECT(CONVERTER, TP) \
-    py::to_python_converter< \
-      TP, typename CONVERTER::template indirect_to_python<TP> >()
-
-    {
-      typedef ublas::vector<T> cl;
-      py::to_python_converter<cl, 
-        typename vec_converter::template indirect_to_python<cl> >();
-    }
-    {
-      typedef ublas::bounded_vector<T, 3> cl;
-      py::to_python_converter<cl, 
-        typename vec_converter::template indirect_to_python<cl> >();
-    }
-    {
-      typedef ublas::matrix<T, ublas::row_major> cl;
-      py::to_python_converter<cl, 
-        typename rm_mat_converter::template indirect_to_python<cl> >();
-    }
-    {
-      typedef ublas::matrix<T, ublas::column_major> cl;
-      py::to_python_converter<cl, 
-        typename cm_mat_converter::template indirect_to_python<cl> >();
-    }
-
-    py::implicitly_convertible<vec, ublas::vector<T> >();
-    py::implicitly_convertible<vec, ublas::bounded_vector<T, 3> >();
-    py::implicitly_convertible<rm_mat, ublas::matrix<T, ublas::row_major> >();
-    py::implicitly_convertible<cm_mat, ublas::matrix<T, ublas::column_major> >();
+    register_indirect_array_converter
+      <vec_converter, ublas::vector<T> >();
+    register_indirect_array_converter
+      <vec_converter, ublas::bounded_vector<T, 2> >();
+    register_indirect_array_converter
+      <vec_converter, ublas::bounded_vector<T, 3> >();
+    register_indirect_array_converter
+      <rm_mat_converter, ublas::matrix<T, ublas::row_major> >();
+    register_indirect_array_converter
+      <cm_mat_converter, ublas::matrix<T, ublas::column_major> >();
   }
 }
 
