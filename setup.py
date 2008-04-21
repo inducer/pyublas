@@ -123,7 +123,7 @@ def main():
               ],
 
             setup_requires=[
-                "PyUblas>=0.92",
+                "numpy>=1.0.4",
                 ],
             zip_safe=False,
 
