@@ -11,3 +11,4 @@ Makefile
 tags
 MANIFEST
 dist
+*.egg-info
