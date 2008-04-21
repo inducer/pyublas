@@ -22,6 +22,8 @@ def get_config_schema():
 
         StringListOption("CXXFLAGS", ["-Wno-sign-compare"], 
             help="Any extra C++ compiler options to include"),
+        StringListOption("LDFLAGS", [], 
+            help="Any extra linker compiler options to include"),
         ])
 
 
@@ -137,6 +139,7 @@ def main():
                 libraries=LIBRARIES+EXTRA_LIBRARIES,
                 define_macros=EXTRA_DEFINES.items(),
                 extra_compile_args=conf["CXXFLAGS"],
+                extra_link_args=conf["LDFLAGS"],
                 )
                 ],
             data_files=[("include/pyublas", glob.glob("src/cpp/pyublas/*.hpp"))],
