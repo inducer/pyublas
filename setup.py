@@ -20,7 +20,7 @@ def get_config_schema():
 
         Switch("WITH_SPARSE_WRAPPERS", False, "Whether to build sparse wrappers"),
 
-        StringListOption("CXXFLAGS", [], 
+        StringListOption("CXXFLAGS", ["-Wno-sign-compare"], 
             help="Any extra C++ compiler options to include"),
         ])
 
