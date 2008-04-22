@@ -28,12 +28,33 @@ class NumpyExtension(Extension):
         self._include_dirs = self.include_dirs
         del self.include_dirs # restore overwritten property
 
+    def get_numpy_incpath(self):
+        from imp import find_module
+        # avoid actually importing numpy, it screws up distutils
+        file, pathname, descr = find_module("numpy")
+        from os.path import join
+        return join(pathname, "core", "include")
+
     @property
     def include_dirs(self):
-        import numpy
+        return self._include_dirs + [self.get_numpy_incpath()]
+
+
+
+
+class PyUblasExtension(NumpyExtension):
+    def get_pyublas_incpath(self):
+        from imp import find_module
+        file, pathname, descr = find_module("pyublas")
         from os.path import join
-        numpy_inc_dir = join(numpy.__path__[0], "core", "include")
-        return self._include_dirs + [numpy_inc_dir]
+        return join(pathname, "..", "include")
+
+    @property
+    def include_dirs(self):
+        return self._include_dirs + [
+                self.get_numpy_incpath(),
+                self.get_pyublas_incpath(),
+                ]
 
 
 
