@@ -14,8 +14,6 @@ def get_config_schema():
         LibraryDir("BOOST", []),
         Libraries("BOOST_PYTHON", ["boost_python-gcc42-mt"]),
 
-        IncludeDir("NUMPY"),
-
         IncludeDir("BOOST_BINDINGS", []),
 
         Switch("WITH_SPARSE_WRAPPERS", False, "Whether to build sparse wrappers"),
@@ -23,7 +21,7 @@ def get_config_schema():
         StringListOption("CXXFLAGS", ["-Wno-sign-compare"], 
             help="Any extra C++ compiler options to include"),
         StringListOption("LDFLAGS", [], 
-            help="Any extra linker compiler options to include"),
+            help="Any extra linker options to include"),
         ])
 
 
@@ -31,22 +29,13 @@ def get_config_schema():
 
 def main():
     import glob
-    from aksetup_helper import hack_distutils, get_config, setup, Extension
+    from aksetup_helper import hack_distutils, get_config, setup, \
+            NumpyExtension
 
     hack_distutils()
     conf = get_config()
 
-    if conf["NUMPY_INC_DIR"] is None:
-        try:
-            import numpy
-            from os.path import join
-            conf["NUMPY_INC_DIR"] = [join(numpy.__path__[0], "core", "include")]
-        except:
-            pass
-
-    INCLUDE_DIRS = ["src/cpp"] + \
-                   conf["BOOST_INC_DIR"] + \
-                   conf["NUMPY_INC_DIR"]
+    INCLUDE_DIRS = ["src/cpp"] + conf["BOOST_INC_DIR"] 
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
 
@@ -125,14 +114,18 @@ def main():
               ],
 
             setup_requires=[
-                "numpy>=1.0.4",
-                ],
+                    "numpy>=1.0.4",
+                    ],
+            install_requires=[
+                    "numpy>=1.0.4",
+                    ],
+
             zip_safe=False,
 
             packages=["pyublas"],
             package_dir={"pyublas": "src/python"},
             ext_package="pyublas",
-            ext_modules=[ Extension("_internal", 
+            ext_modules=[ NumpyExtension("_internal", 
                 ext_src,
                 include_dirs=INCLUDE_DIRS+EXTRA_INCLUDE_DIRS,
                 library_dirs=LIBRARY_DIRS+EXTRA_LIBRARY_DIRS,
@@ -140,8 +133,7 @@ def main():
                 define_macros=EXTRA_DEFINES.items(),
                 extra_compile_args=conf["CXXFLAGS"],
                 extra_link_args=conf["LDFLAGS"],
-                )
-                ],
+                )],
             data_files=[("include/pyublas", glob.glob("src/cpp/pyublas/*.hpp"))],
              )
 
