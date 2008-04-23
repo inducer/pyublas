@@ -7,9 +7,10 @@ doc/html
 *.a
 *.o
 *.pyc
-Makefile
+/Makefile
 tags
 MANIFEST
 dist
 *.egg*
 *.so
+.build
