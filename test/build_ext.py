@@ -3,10 +3,13 @@
 def build_ext():
     import sys
     sys.path.append("..")
+    from setup import get_config_schema
+    schema = get_config_schema()
+    schema.set_conf_dir("..")
 
     from aksetup_helper import get_config
 
-    conf = get_config("..")
+    conf = get_config(schema)
 
     import distutils.sysconfig
     import numpy

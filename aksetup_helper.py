@@ -85,10 +85,10 @@ def humanize(sym_str):
 
 
 # siteconf handling -----------------------------------------------------------
-def get_config(rootdir="."):
-    from setup import get_config_schema
-    schema = get_config_schema()
-    schema.set_conf_dir(rootdir)
+def get_config(schema=None):
+    if schema is None:
+        from setup import get_config_schema
+        schema = get_config_schema()
 
     if not schema.have_config() and not schema.have_global_config():
         print "********************************************************"
