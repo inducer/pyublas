@@ -5,7 +5,7 @@
 Welcome to PyUblas's documentation!
 ===================================
 
-Thanks for your interest in PyUblas!
+Thanks for your interest in PyUblas.
 
 Contents:
 
@@ -17,6 +17,11 @@ Contents:
    converters
    wrapping
    pymodule
+   faq
+
+.. # write overview
+.. # write about slice handling on conversion
+.. # import remaining header info
 
 Indices and tables
 ==================
@@ -24,4 +29,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

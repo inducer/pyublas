@@ -1,5 +1,5 @@
-More considerations when wrapping code with PyUblas
-===================================================
+Wrapping C++ code with PyUblas
+==============================
 
 Data members of type :ctype:`numpy_vector`
 ------------------------------------------

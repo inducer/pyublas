@@ -14,8 +14,6 @@ def get_config_schema():
         LibraryDir("BOOST", []),
         Libraries("BOOST_PYTHON", ["boost_python-gcc42-mt"]),
 
-        IncludeDir("BOOST_BINDINGS", []),
-
         Switch("WITH_SPARSE_WRAPPERS", False, "Whether to build sparse wrappers"),
 
         StringListOption("CXXFLAGS", ["-Wno-sign-compare"], 
@@ -39,7 +37,6 @@ def main():
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
 
-    EXTRA_INCLUDE_DIRS = conf["BOOST_BINDINGS_INC_DIR"]
     EXTRA_LIBRARY_DIRS = []
     EXTRA_LIBRARIES = []
 
@@ -56,6 +53,7 @@ def main():
                 "src/wrapper/sparse_execute.cpp",
                 ]
         EXTRA_DEFINES["HAVE_SPARSE_WRAPPERS"] = 1
+
 
     setup(
             name="PyUblas",

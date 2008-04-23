@@ -3,6 +3,13 @@
 The C++ Vector and Matrix Types
 ===============================
 
+PyUblas defines Ublas-compatible C++ types, namelyvector and matrix types,
+:ctype:`numpy_vector` and :ctype:`numpy_matrix`. These are defined in
+:file:`pyublas/numpy.hpp`.
+
+Introduction
+------------
+
 :ctype:`numpy_vector` is derived from Ublas's ``vector`` and may be used in the
 same places as the latter, in the same ways.  There is only one difference:
 
@@ -44,15 +51,91 @@ slower than iterator access. Iterators achieve the same speed as "regular"
 Ublas, while indexed access adds an extra level of pointer lookup. As is true
 of much of the rest of C++: *Use iterators whenever possible.*
 
-Interaction with Boost.Bindings
+Reference
+---------
+
+``#include <pyublas/numpy.hpp``
+
+.. ctype:: numpy_array
+  
+    ``template <class ValueType>``, in namespace ``pyublas``.
+
+    Only members that are not already part of the 
+    `Boost.Ublas "Storage" Concept <http://www.boost.org/doc/libs/1_35_0/libs/numeric/ublas/doc/storage_concept.htm>`_
+    are shown.
+
+    Public type definitions::
+
+      typedef std::size_t size_type;
+      typedef std::ptrdiff_t difference_type;
+      typedef ValueType value_type;
+      typedef const ValueType &const_reference;
+      typedef ValueType &reference;
+      typedef const ValueType *const_pointer;
+      typedef ValueType *pointer;
+
+    .. cfunction:: numpy_array numpy_array::constructor()
+                   numpy_array numpy_array::constructor(size_type n)
+                   numpy_array numpy_array::constructor(size_type n, const value_type &v)
+                   numpy_array numpy_array::constructor(int ndim, const npy_intp *dims)
+                   numpy_array numpy_array::constructor(const boost::python::handle<> &obj)
+
+    .. cfunction:: size_type numpy_array::ndim()
+
+        A ``const`` member function.
+    .. cfunction:: const npy_intp *numpy_array::dims()
+
+        A ``const`` member function.
+
+    .. cfunction:: const npy_intp *numpy_array::strides()
+
+        A ``const`` member function.
+
+    .. cfunction:: npy_intp numpy_array::min_stride()
+
+        A ``const`` member function.
+
+    .. cfunction:: npy_intp numpy_array::itemsize()
+
+        A ``const`` member function.
+
+    .. cfunction:: bool numpy_array::writable()
+
+        A ``const`` member function.
+
+    .. cfunction:: void numpy_array::reshape(int ndim, const npy_intp *dims, NPY_ORDER order=NPY_CORDER)
+
+    .. cfunction:: value_type *numpy_array::data()
+
+    .. cfunction:: const value_type *numpy_array::data()
+
+        A ``const`` member function.
+
+    .. cfunction:: const boost::python::handle<> &numpy_array::handle()
+
+        A ``const`` member function.
+
+    .. cfunction:: boost::python::handle<> &numpy_array::handle() 
+
+.. ctype:: numpy_vector
+
+    ``template <class ValueType>``, in namespace ``pyublas``.
+
+.. ctype:: numpy_matrix
+
+    ``template <class ValueType, class Orientation=boost::numeric::ublas::row_major>``, 
+    in namespace ``pyublas``.
+
+Interacting with Boost.Bindings
 -------------------------------
 
-If you use the `Boost.Bindings
-<http://mathema.tician.de/software/boost-bindings>`_ library to access existing
-Fortran or C code, your code will continue to work for :ctype:`numpy_vector`
-unmodified. For :ctype:`numpy_matrix`, there is a slight catch that may be
-fixed in a future version. For the :ctype:`matrix_traits` to properly recognize
+PyUblas contains special code to support interacting with the `Boost.Bindings
+<http://mathema.tician.de/software/boost-bindings>`_ library.
+
+If you want to activate this support, define the macro 
+:cmacro:`PYUBLAS_HAVE_BOOST_BINDINGS` before include :file:`pyublas/numpy.hpp`.
+
+Boost.Bindings works seamlessly with :ctype:`numpy_vector`. For 
 :ctype:`numpy_matrix`, you need to explicitly downcast it to the
 :ctype:`ublas::matrix` type. You may do so by simply calling the
-``.as_ublas()`` method on :ctype:`numpy_matrix`.
-
+``.as_ublas()`` method.

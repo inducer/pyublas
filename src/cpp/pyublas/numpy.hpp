@@ -29,7 +29,6 @@
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <numpy/arrayobject.h>
-#include <boost/numeric/bindings/traits/ublas_vector.hpp>
 
 
 
@@ -257,15 +256,13 @@ namespace pyublas
       }
 
       // Assignment
-      numpy_array &operator=(
-          const numpy_array &a) 
+      numpy_array &operator=(const numpy_array &a) 
       {
         m_numpy_array = a.m_numpy_array;
         return *this;
       }
 
-      numpy_array &assign_temporary(
-          numpy_array &a) 
+      numpy_array &assign_temporary(numpy_array &a) 
       {
         m_numpy_array = a.m_numpy_array;
         return *this;
@@ -506,9 +503,9 @@ namespace pyublas
       { return *reinterpret_cast<const T*>(PyArray_GETPTR4(this->data(), i, j, k, l)); }
 
       // shape manipulation 
-      void reshape(int ndim_, const npy_intp *dims_)
+      void reshape(int ndim_, const npy_intp *dims_, NPY_ORDER order=NPY_CORDER)
       {
-        this->data().reshape(ndim_, dims_);
+        this->data().reshape(ndim_, dims_, order);
       }
 
       // as-strided accessor
@@ -671,6 +668,13 @@ namespace pyublas
 
 
 // interaction with boost bindings --------------------------------------------
+#ifdef PYUBLAS_HAVE_BOOST_BINDINGS
+
+#include <boost/numeric/bindings/traits/ublas_vector.hpp>
+
+
+
+
 namespace boost { namespace numeric { namespace bindings { namespace traits {
   template <typename T, typename V>
   struct vector_detail_traits< pyublas::numpy_array<T>, V > 
@@ -688,6 +692,8 @@ namespace boost { namespace numeric { namespace bindings { namespace traits {
 
     static pointer storage (vector_type& v) { return v.data(); }
   }; 
+
+#endif
 }}}}  
 
 

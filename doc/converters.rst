@@ -72,20 +72,5 @@ still complains that no valid overload can be found. Common reasons include:
   is expecting. By default, :ctype:`numpy_matrix` is row-major, as is :class:`numpy.array`
   when creating a 2D array.
 
-To help you debug these cases, there is a :func:`why_not` function in the Python
-:mod:`pyublas` namespace. It will simply return the same array it is passed as the
-first argument, but it will issue a warning if the array will not successfully
-convert to a :ctype:`numpy_vector` or :ctype:`numpy_matrix`. This is the function signature:
-
-.. code-block:: python
-
-  def why_not(val, dtype=float, matrix=False, row_major=True):
-      ...
-
-When debugging an overload failure, you simply insert it in the argument list
-of the failing call:
-
-.. code-block:: python
-
-  do_stuff4(pyublas.why_not(myarray))
+The function :func:`pyublas.why_not` can help you debug these cases.
 
