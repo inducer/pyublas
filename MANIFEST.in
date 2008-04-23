@@ -2,6 +2,9 @@ include src/cpp/pyublas/*.hpp
 include src/wrapper/*.hpp
 include test/*.py
 include test/*.cpp
+include doc/*.rst
+include doc/Makefile
+include doc/conf.py
 
 include ez_setup.py
 include configure

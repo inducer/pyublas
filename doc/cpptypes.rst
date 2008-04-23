@@ -54,7 +54,7 @@ of much of the rest of C++: *Use iterators whenever possible.*
 Reference
 ---------
 
-``#include <pyublas/numpy.hpp``
+``#include <pyublas/numpy.hpp>``
 
 .. ctype:: numpy_array
   
@@ -121,10 +121,96 @@ Reference
 
     ``template <class ValueType>``, in namespace ``pyublas``.
 
+    .. cfunction:: numpy_vector::constructor()
+
+    .. cfunction:: numpy_vector::constructor(const numpy_array<ValueType> &s)
+
+        Observe that PyObject handles are implicitly convertible
+        to :ctype:`numpy_array`.
+
+    .. cfunction:: numpy_vector::constructor(int ndim, const npy_intp *dims)
+
+    .. cfunction:: numpy_vector::constructor(typename super::size_type size)
+
+        ``explicit`` constructor.
+
+    .. cfunction:: numpy_vector::constructor(size_type size, const value_type &init)
+
+    .. cfunction:: numpy_vector::constructor(const numpy_vector &v)
+
+    .. cfunction:: numpy_vector::constructor(const boost::numeric::ublas::vector_expression<AE> &ae)
+
+        ``template<class AE>``.
+
+    .. cfunction:: size_type numpy_vector::ndim()
+
+        A ``const`` member function.
+    .. cfunction:: const npy_intp *numpy_vector::dims()
+
+        A ``const`` member function.
+    .. cfunction:: const npy_intp *numpy_vector::strides()
+
+        A ``const`` member function.
+    .. cfunction:: npy_intp numpy_vector::min_stride()
+
+        A ``const`` member function.
+    .. cfunction:: npy_intp numpy_vector::itemsize()
+
+        A ``const`` member function.
+    .. cfunction:: bool numpy_vector::writable()
+
+        A ``const`` member function.
+
+    .. cfunction:: ValueType &sub(npy_intp i) 
+                   ValueType &sub(npy_intp i, npy_intp j) 
+                   ValueType &sub(npy_intp i, npy_intp j, npy_intp k) 
+                   ValueType &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
+
+        Also available as a ``const`` member functions.
+
+    .. cfunction:: void numpy_vector::reshape(int ndim_, const npy_intp *dims_, NPY_ORDER order=NPY_CORDER)
+
+    .. cfunction:: boost::numeric::ublas::vector_slice<numpy_vector> numpy_vector::as_strided()
+
+    .. cfunction:: boost::vector<ValueType> &numpy_vector::as_ublas() 
+
+        Also available as a ``const`` member function.
+
+    .. cfunction:: boost::python::handle<> numpy_vector::to_python()
+
+        A ``const`` member function.
+
 .. ctype:: numpy_matrix
 
     ``template <class ValueType, class Orientation=boost::numeric::ublas::row_major>``, 
     in namespace ``pyublas``.
+
+    .. cfunction:: numpy_matrix::constructor()
+
+    .. cfunction:: numpy_matrix::constructor(size_type size1, size_type size2)
+
+    .. cfunction:: numpy_matrix::constructor(size_type size1, size_type size2, const value_type &init)
+
+    .. cfunction:: numpy_matrix::constructor(size_type size1, size_type size2, const array_type &data)
+
+    .. cfunction:: numpy_matrix::constructor(const typename super::array_type &data)
+
+        Observe that PyObject handles are implicitly convertible
+        to :ctype:`numpy_array`.
+
+    .. cfunction:: numpy_matrix::constructor(const numpy_matrix &m)
+
+    .. cfunction:: numpy_matrix::constructor(const boost::numeric::ublas::matrix_expression<AE> &ae)
+
+        ``template<class AE>``
+
+    .. cfunction:: boost::matrix<ValueType, Orientation> &numpy_matrix::as_ublas() 
+
+        Also available as a ``const`` member function.
+
+    .. cfunction:: boost::python::handle<> numpy_matrix::to_python()
+
+        A ``const`` member function.
 
 Interacting with Boost.Bindings
 -------------------------------
@@ -138,4 +224,4 @@ If you want to activate this support, define the macro
 Boost.Bindings works seamlessly with :ctype:`numpy_vector`. For 
 :ctype:`numpy_matrix`, you need to explicitly downcast it to the
 :ctype:`ublas::matrix` type. You may do so by simply calling the
-``.as_ublas()`` method.
+:cfunc:`as_ublas` method.

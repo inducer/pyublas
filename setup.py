@@ -37,9 +37,6 @@ def main():
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
 
-    EXTRA_LIBRARY_DIRS = []
-    EXTRA_LIBRARIES = []
-
     EXTRA_DEFINES = {}
 
     ext_src = [
@@ -53,7 +50,6 @@ def main():
                 "src/wrapper/sparse_execute.cpp",
                 ]
         EXTRA_DEFINES["HAVE_SPARSE_WRAPPERS"] = 1
-
 
     setup(
             name="PyUblas",
@@ -125,9 +121,9 @@ def main():
             ext_package="pyublas",
             ext_modules=[ NumpyExtension("_internal", 
                 ext_src,
-                include_dirs=INCLUDE_DIRS+EXTRA_INCLUDE_DIRS,
-                library_dirs=LIBRARY_DIRS+EXTRA_LIBRARY_DIRS,
-                libraries=LIBRARIES+EXTRA_LIBRARIES,
+                include_dirs=INCLUDE_DIRS,
+                library_dirs=LIBRARY_DIRS,
+                libraries=LIBRARIES,
                 define_macros=EXTRA_DEFINES.items(),
                 extra_compile_args=conf["CXXFLAGS"],
                 extra_link_args=conf["LDFLAGS"],

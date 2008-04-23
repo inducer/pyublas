@@ -17,3 +17,9 @@ Since PyUblas requires numpy, you'll need a similar snippet for that, too::
     file, pathname, descr = find_module("numpy")
     from os.path import join
     return join(pathname, "core", "include")
+
+What about 0-dimensional arrays?
+--------------------------------
+
+0-dimensional arrays are supported by PyUblas, they get converted to
+:ctype:`numpy_vector` instances of length 1.
