@@ -516,6 +516,13 @@ namespace pyublas
         return subslice(*this, 0, ms, this->size()/ms);
       }
 
+      boost::numeric::ublas::vector_slice<const numpy_vector>
+        as_strided() const
+      {
+        npy_intp ms = min_stride()/sizeof(T);
+        return subslice(*this, 0, ms, this->size()/ms);
+      }
+
       // as-ublas accessor
       super &as_ublas() 
       { return *this; }
@@ -692,9 +699,9 @@ namespace boost { namespace numeric { namespace bindings { namespace traits {
 
     static pointer storage (vector_type& v) { return v.data(); }
   }; 
+}}}}  
 
 #endif
-}}}}  
 
 
 

@@ -119,6 +119,7 @@ def main():
             packages=["pyublas"],
             package_dir={"pyublas": "src/python"},
             ext_package="pyublas",
+            test_suite="test.test",
             ext_modules=[ NumpyExtension("_internal", 
                 ext_src,
                 include_dirs=INCLUDE_DIRS,

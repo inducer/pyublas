@@ -13,6 +13,10 @@ Two simple rules:
 * Only 2D arrays of the right element order (i.e. column-/row-major) can be
   converted to :ctype:`numpy_matrix`.
 
+If a multi-dimensional array is converted to a :ctype:`numpy_vector`,
+the data in the vector will be a flattened representation of that
+vector.
+
 References and Pointers
 -----------------------
 
@@ -56,21 +60,90 @@ Note that :ctype:`numpy_vector` also has a constructor accepting a
 This may also be used to conveniently construct a :ctype:`numpy_vector` from a
 known Python instance.
 
-When conversion fails
----------------------
+What about slices?
+------------------
 
-Even if you heed all the advice in the previous section, sometimes Boost.Python
-still complains that no valid overload can be found. Common reasons include:
+Numpy arrays can (and often do) represent slices of bigger arrays.
+PyUblas deals with these arrays just fine, but if your slices are
+non-contiguous, a few issues arise.
 
-* You expect to be handling a float array, but you actually got an int (or
-  different dtype) array. To be consistent, PyUblas will not copy-and-cast in
-  this situation. If necessary, use :func:`numpy.asarray` in your Python code.
-  (I'm debating whether to add C++ syntax to say "copying is ok here". If you
-  have input, let me know.)
+What are non-contiguous slices?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* If converting a matrix, the row/column-major setting may not match what Ublas
-  is expecting. By default, :ctype:`numpy_matrix` is row-major, as is :class:`numpy.array`
-  when creating a 2D array.
+For a 1D array, the only way to get a non-contiguous slice is
+to specify a stride::
 
-The function :func:`pyublas.why_not` can help you debug these cases.
+    >>> import numpy
+    >>> a = numpy.arange(10)
+    >>> a
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    >>> a[::2]
+    array([0, 2, 4, 6, 8])
+
+For a 2D array, there are more fun ways of getting non-contiguous
+data::
+
+    >>> b = a.reshape((3,3))
+    >>> b
+    array([[0, 1, 2],
+           [3, 4, 5],
+           [6, 7, 8]])
+    >>> b[1:] # contiguous
+    array([[3, 4, 5],
+           [6, 7, 8]])
+    >>> b[:,1:] # not contiguous
+    array([[1, 2],
+           [4, 5],
+           [7, 8]])
+
+Same concept, but different appearance for Fortran ordering::
+
+    >>> c = a.reshape((3,3), order="F")
+    >>> c
+    array([[0, 3, 6],
+           [1, 4, 7],
+           [2, 5, 8]])
+    >>> c[1:] # not contiguous
+    array([[1, 4, 7],
+           [2, 5, 8]])
+    >>> c[:,1:] # contiguous
+    array([[3, 6],
+           [4, 7],
+           [5, 8]])
+
+What happens to non-contiguous slices?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Since PyUblas directly exposes NumPy's internal data storage area via
+:ctype:`numpy_vector`, the in-between elements that are omitted from
+the slice suddenly show up again. This could be prevented, at the
+cost of forcing the use of strided iterators. I believe that this
+would add an unreasonable performance penalty to the average use
+case. Therefore, this is not the default behavior.
+
+There are three ways of deal with this situation:
+
+* By invoking the :cfunc:`numpy_vector_as_strided` member function,
+  you can obtain a view of the vector that takes the numpy array's
+  smallest stride into account, making it *seem* contiguous.
+
+* You can access the array exclusively through the 
+  :cfunc:`numpy_vector_sub` family of member functions.
+  These take the striding into account, too.
+
+* You can obtain stride information by calling 
+  :cfunc:`numpy_vector_strides` and do the striding manually.
+
+The PyUblas test suite explores many of these corner cases that
+arise here. You're welcome to take a look.
+
+Does :ctype:`numpy_matrix` support non-contiguous arrays?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+No.
+
+Troubleshooting
+---------------
+
+See :ref:`faq-overload-failure`.
 
