@@ -96,7 +96,7 @@ Just type::
     $ cd PyUblas-VERSION # if you're not there already
     $ ./configure \
       --boost-inc-dir=$HOME/pool/include/boost-1_35 \
-      --bost-lib-dir=$HOME/pool/lib \
+      --boost-lib-dir=$HOME/pool/lib \
       --boost-python-libname=boost_python-gcc42-mt
     $ su -c "make install"
 

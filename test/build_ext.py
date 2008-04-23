@@ -6,7 +6,7 @@ def build_ext():
 
     from aksetup_helper import get_config
 
-    conf = get_config()
+    conf = get_config("..")
 
     import distutils.sysconfig
     import numpy
