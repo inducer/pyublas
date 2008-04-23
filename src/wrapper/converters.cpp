@@ -105,6 +105,25 @@ namespace
 
         return obj;
       }
+
+      // needs to be overridden to copy strided version
+      template <class RealTgtType>
+      static void construct_indirect(
+          PyObject* obj, 
+          py::converter::rvalue_from_python_stage1_data* data)
+      {
+        void* storage = ((py::converter::rvalue_from_python_storage<
+              typename super::target_type>*)data)->storage.bytes;
+
+        new (storage) RealTgtType(
+            typename super::target_type(
+              py::handle<>(py::borrowed(obj))
+              ).as_strided()
+            );
+
+        // record successful construction
+        data->convertible = storage;
+      }
   };
 
 
@@ -127,6 +146,9 @@ namespace
           return 0;
         if (PyArray_NDIM(obj) != 2)
           return 0;
+        if (!PyArray_CHKFLAGS(obj, NPY_CONTIGUOUS))
+          return 0;
+
         if (PyArray_STRIDE(obj, 1) == PyArray_ITEMSIZE(obj))
         {
           if (!is_row_major(typename MatrixType::orientation_category()))

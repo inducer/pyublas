@@ -19,9 +19,11 @@
 
 
 
+#include <numeric>
 #include <complex>
 #include <pyublas/python_helpers.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/vector_proxy.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/storage.hpp>
 #include <boost/python.hpp>
@@ -69,6 +71,20 @@ namespace pyublas
 
 
 
+  // tool functions -----------------------------------------------------------
+  inline
+  npy_intp size_from_dims(int ndim, const npy_intp *dims)
+  {
+    if (ndim != 0)
+      return std::accumulate(dims, dims+ndim, 1, std::multiplies<npy_intp>());
+    else
+      return 1;
+  }
+
+
+
+
+  // ublas storage array ------------------------------------------------------
   template <class T>
   class numpy_array
   {
@@ -99,6 +115,15 @@ namespace pyublas
             PyArray_SimpleNew(1, dims, get_typenum(T())));
       }
 
+      numpy_array(int ndim_, const npy_intp *dims_)
+      {
+        m_numpy_array = boost::python::handle<>(
+            PyArray_SimpleNew(
+              ndim_, 
+              const_cast<npy_intp *>(dims_), 
+              get_typenum(T())));
+      }
+
       numpy_array(size_type n, const value_type &v)
       {
         if (size)
@@ -126,6 +151,8 @@ namespace pyublas
             PYUBLAS_PYERROR(ValueError, "argument array is not aligned");
         if (PyArray_CHKFLAGS(obj.get(), NPY_NOTSWAPPED))
             PYUBLAS_PYERROR(ValueError, "argument array does not have native endianness");
+        if (PyArray_ITEMSIZE(obj.get()) != sizeof(T))
+            PYUBLAS_PYERROR(ValueError, "itemsize does not match size of target type");
       }
 
     private:
@@ -167,13 +194,40 @@ namespace pyublas
       }
 
       size_type size() const 
-      {
-        return PyArray_SIZE(m_numpy_array.get());
+      { 
+        if (ndim() != 0)
+          return min_stride()/sizeof(T)*size_from_dims(ndim(), dims());
+        else
+          return 1;
       }
 
-      bool writable() const
+      // metadata
+      size_type ndim() const 
+      { return PyArray_NDIM(m_numpy_array.get()); }
+      const npy_intp *dims() const 
+      { return PyArray_DIMS(m_numpy_array.get()); }
+      const npy_intp *strides() const 
+      { return PyArray_STRIDES(m_numpy_array.get()); }
+      npy_intp min_stride() const
       {
-        return PyArray_ISWRITEABLE(m_numpy_array.get());
+        if (ndim() == 0)
+          return itemsize();
+        else
+          return *std::min_element(strides(), strides()+ndim());
+      }
+      npy_intp itemsize() const
+      { return sizeof(T); }
+      bool writable() const
+      { return PyArray_ISWRITEABLE(m_numpy_array.get()); }
+
+      // shape manipulation
+      void reshape(int ndim_, const npy_intp *dims_, 
+          NPY_ORDER order=NPY_CORDER)
+      {
+        PyArray_Dims d = { const_cast<npy_intp *>(dims_), ndim_ };
+        m_numpy_array = boost::python::handle<>(
+            PyArray_Newshape(
+              (PyArrayObject *) m_numpy_array.get(), &d, order));
       }
 
       // Raw data access
@@ -302,7 +356,10 @@ namespace pyublas
     typedef numpy_array<T> mat_type;
 
     if (PyArray_NDIM(ary.handle().get()) != 2)
-      throw std::runtime_error("numpy array has dimension != 2");
+      throw std::runtime_error("ndarray->matrix converteee has dimension != 2");
+
+    if (!PyArray_CHKFLAGS(ary.handle().get(), NPY_CONTIGUOUS))
+      throw std::runtime_error("ndarray->matrix converteee is noncontiguous");
 
     if (PyArray_STRIDE(ary.handle().get(), 1) 
         == PyArray_ITEMSIZE(ary.handle().get()))
@@ -390,6 +447,11 @@ namespace pyublas
       {
       }
 
+      numpy_vector(int ndim_, const npy_intp *dims_)
+        : super(size_from_dims(ndim_, dims_), 
+            numpy_array<T>(ndim_, dims_))
+      { }
+
       explicit 
         numpy_vector(typename super::size_type size)
         : super(size) 
@@ -401,6 +463,7 @@ namespace pyublas
         : super(size, init) 
       {}
 
+
       numpy_vector (const numpy_vector &v)
         : super(v)
       { }
@@ -409,6 +472,52 @@ namespace pyublas
       numpy_vector(const boost::numeric::ublas::vector_expression<AE> &ae)
       : super(ae)
       { }
+
+      // numpy array metadata
+      typename super::size_type ndim() const 
+      { return this->data().ndim(); }
+      const npy_intp *dims() const 
+      { return this->data().dims(); }
+      const npy_intp *strides() const 
+      { return this->data().strides(); }
+      npy_intp min_stride() const
+      { return this->data().min_stride(); }
+      npy_intp itemsize() const
+      { return sizeof(T); }
+      bool writable() const 
+      { return this->data().writable(); }
+
+      // several-d subscripts
+      T &sub(npy_intp i) 
+      { return *reinterpret_cast<T*>(PyArray_GETPTR1(this->data(), i)); }
+      const T &sub(npy_intp i) const
+      { return *reinterpret_cast<const T*>(PyArray_GETPTR1(this->data(), i)); }
+      T &sub(npy_intp i, npy_intp j) 
+      { return *reinterpret_cast<T*>(PyArray_GETPTR2(this->data(), i, j)); }
+      const T &sub(npy_intp i, npy_intp j) const
+      { return *reinterpret_cast<const T*>(PyArray_GETPTR2(this->data(), i, j)); }
+      T &sub(npy_intp i, npy_intp j, npy_intp k) 
+      { return *reinterpret_cast<T*>(PyArray_GETPTR3(this->data(), i, j, k)); }
+      const T &sub(npy_intp i, npy_intp j, npy_intp k) const
+      { return *reinterpret_cast<const T*>(PyArray_GETPTR3(this->data(), i, j, k)); }
+      T &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
+      { return *reinterpret_cast<T*>(PyArray_GETPTR4(this->data(), i, j, k, l)); }
+      const T &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) const
+      { return *reinterpret_cast<const T*>(PyArray_GETPTR4(this->data(), i, j, k, l)); }
+
+      // shape manipulation 
+      void reshape(int ndim_, const npy_intp *dims_)
+      {
+        this->data().reshape(ndim_, dims_);
+      }
+
+      // as-strided accessor
+      boost::numeric::ublas::vector_slice<numpy_vector>
+        as_strided()
+      {
+        npy_intp ms = min_stride()/sizeof(T);
+        return subslice(*this, 0, ms, this->size()/ms);
+      }
 
       // as-ublas accessor
       super &as_ublas() 

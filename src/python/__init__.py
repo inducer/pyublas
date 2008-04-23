@@ -376,11 +376,17 @@ def why_not(val, dtype=float, matrix=False, row_major=True):
             warn("array rank is not 2")
         else:
             if val.strides[1] == val.itemsize:
+                # array is row-major
                 if not row_major:
                     warn("array is row-major, but column-major arrays are accepted")
+                if not val.flags.c_contiguous:
+                    warn("array is row-major, but rows are not contiguous")
             elif val.strides[0] == val.itemsize:
+                # array is column-major
                 if row_major:
                     warn("array is column-major, but row-major arrays are accepted")
+                if not val.flags.f_contiguous:
+                    warn("array is column-major, but columns are not contiguous")
             else:
                 warn("array is not contiguous")
     return val
