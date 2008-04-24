@@ -53,7 +53,7 @@ def main():
 
     setup(
             name="PyUblas",
-            version="0.92.3",
+            version="0.92.4",
             description="Seamless Numpy-UBlas interoperability",
             long_description="""
             PyUblas provides a seamless glue layer between
@@ -107,12 +107,13 @@ def main():
               'Topic :: Utilities',
               ],
 
-            setup_requires=[
-                    "numpy>=1.0.4",
-                    ],
-            install_requires=[
-                    "numpy>=1.0.4",
-                    ],
+            # numpy is often under the setuptools radar.
+            #setup_requires=[
+                    #"numpy>=1.0.4",
+                    #],
+            #install_requires=[
+                    #"numpy>=1.0.4",
+                    #],
 
             zip_safe=False,
 
