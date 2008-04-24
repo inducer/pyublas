@@ -29,8 +29,9 @@ to :ctype:`numpy_vector` instances of length 1.
 My wrapped function is not found by Boost.Python. Help!
 -------------------------------------------------------
 
-Even if you heed all the advice in the previous section, sometimes Boost.Python
-still complains that no valid overload can be found. Common reasons include:
+Even if you heed all the advice in :ref:`frompython`, Boost.Python
+will sometimes still complain that no valid overload can be found.
+Common reasons include:
 
 * You expect to be handling a float array, but you actually got an int (or
   different dtype) array. To be consistent, PyUblas will not copy-and-cast in
@@ -43,4 +44,3 @@ still complains that no valid overload can be found. Common reasons include:
   when creating a 2D array.
 
 The function :func:`pyublas.why_not` can help you debug these cases.
-

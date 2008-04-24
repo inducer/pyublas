@@ -1,5 +1,7 @@
 .. highlight:: c++
 
+.. _frompython:
+
 Automatic From-Python Conversion
 ================================
 
@@ -55,10 +57,12 @@ extracted that would outlive the `extract<>()` constructor call. Therefore (1)
 and (2) are invalid. Because of the reference semantics, (3) is probably what
 you want anyway.
 
-Note that :ctype:`numpy_vector` also has a constructor accepting a
-``boost::python::handle<>`` (which is a thin wrapper around a ``PyObject *``).
-This may also be used to conveniently construct a :ctype:`numpy_vector` from a
-known Python instance.
+.. note:: 
+
+    :ctype:`numpy_vector` also has a constructor accepting a
+    ``boost::python::handle<>`` (which is a thin wrapper around a ``PyObject *``).
+    This may also be used to conveniently construct a :ctype:`numpy_vector` from a
+    known Python instance.
 
 What about slices?
 ------------------
@@ -121,7 +125,7 @@ cost of forcing the use of strided iterators. I believe that this
 would add an unreasonable performance penalty to the average use
 case. Therefore, this is not the default behavior.
 
-There are three ways of deal with this situation:
+There are three ways of dealing with this situation:
 
 * By invoking the :cfunc:`numpy_vector_as_strided` member function,
   you can obtain a view of the vector that takes the numpy array's

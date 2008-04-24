@@ -8,17 +8,17 @@ you really only need three basic things:
 
 * A UNIX-like machine with web access.
 * A C++ compiler, preferably a Version 4.x gcc.
-* A working [Python](http://www.python.org) installation, Version 2.4 or newer.
+* A working `Python <http://www.python.org>`_ installation, Version 2.4 or newer.
 
 Step 1: Install Boost
 ---------------------
 
-You may already have a working copy of the [Boost C++
-libraries](http://www.boost.org). If so, make sure that it's version 1.35.0 or
+You may already have a working copy of the `Boost C++
+libraries <http://www.boost.org>`_. If so, make sure that it's version 1.35.0 or
 newer. If not, no problem, we'll build it now. Before you start, make sure you
 have the Python headers (i.e. development information) installed. Your
 operating system may call this package something like `python-dev` or
-`python-devel`. Next, [download](http://boost.org/users/download/) the boost
+`python-devel`. Next, `download <http://boost.org/users/download>`_ the Boost
 release tar.bz2 file. Then, do this::
 
     $ tar xfj ~/download/boost_1_35_0.tar.bz2
@@ -35,9 +35,12 @@ interpreter that is install globally.)
 You may adapt the file and directory names to suit your liking, however the
 rest of this tutorial will assume that you use these paths.
 
-**CAUTION:** Please make sure that the Boost.Python configuration process finds
-the version of Python you intend to use. It is output during the configure/make
-stage.
+
+.. warning::
+
+  Please make sure that the Boost.Python configuration process finds
+  the version of Python you intend to use. It is output during the configure/make
+  stage.
 
 If you see something like::
 

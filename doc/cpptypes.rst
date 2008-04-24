@@ -43,7 +43,9 @@ for both :ctype:`ublas::vector` and :ctype:`numpy_vector`. (Note that here, as
 in the rest of this documentation, the same discussion applies without change
 to :ctype:`numpy_matrix` as well.) 
 
-**CAUTION:** The `assign` method does not resize its target to the size of its operand--this is something you have to do by hand if you use the above recipe.
+.. warning::
+
+  The `assign` method does not resize its target to the size of its operand--this is something you have to do by hand if you use the above recipe.
 
 You should be aware of another, small difference: Because :ctype:`numpy_vector` keeps
 its data reference inside a Numpy array object, indexed access is a good deal
