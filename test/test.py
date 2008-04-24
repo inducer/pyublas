@@ -97,6 +97,13 @@ class TestMatrices(unittest.TestCase):
         assert dbl_1.shape == (10,10)
         assert (dbl_1 == 2).all()
 
+    def test_matrix_cm(self):
+        a = numpy.ones((10,10), dtype=float, order="F")
+
+        dbl_0 = te.dbl_numpy_mat_cm(a)
+        assert dbl_0.shape == (10,10)
+        assert (dbl_0 == 2).all()
+
     def test_matrix_slice(self):
         a = numpy.ones((10,10), dtype=float)
 
@@ -109,6 +116,19 @@ class TestMatrices(unittest.TestCase):
             assert False
         except TypeError:
             pass
+
+    def test_matrix_slice_cm(self):
+        a = numpy.ones((10,10), dtype=float, order="F")
+
+        try:
+            dbl_0 = te.dbl_numpy_mat_cm(a[3:7])
+            assert False
+        except TypeError:
+            pass
+
+        dbl_0 = te.dbl_numpy_mat_cm(a[:, 3:7])
+        assert dbl_0.shape == (10,4)
+        assert (dbl_0 == 2).all()
 
     def test_matrix_slice_inplace(self):
         a = numpy.ones((10,10), dtype=float)

@@ -355,15 +355,14 @@ namespace pyublas
     if (PyArray_NDIM(ary.handle().get()) != 2)
       throw std::runtime_error("ndarray->matrix converteee has dimension != 2");
 
-    if (!PyArray_CHKFLAGS(ary.handle().get(), NPY_CONTIGUOUS))
-      throw std::runtime_error("ndarray->matrix converteee is noncontiguous");
-
     if (PyArray_STRIDE(ary.handle().get(), 1) 
         == PyArray_ITEMSIZE(ary.handle().get()))
     {
       // row-major
       if (!is_row_major(OCat()))
         throw std::runtime_error("input array is not row-major (like the target type)");
+      if (!PyArray_CHKFLAGS(ary.handle().get(), NPY_C_CONTIGUOUS))
+        throw std::runtime_error("ndarray->matrix converteee is not C-contiguous");
     }
     else if (PyArray_STRIDE(ary.handle().get(), 0) 
         == PyArray_ITEMSIZE(ary.handle().get()))
@@ -371,6 +370,8 @@ namespace pyublas
       // column-major
       if (is_row_major(OCat()))
         throw std::runtime_error("input array is not column-major (like the target type)");
+      if (!PyArray_CHKFLAGS(ary.handle().get(), NPY_F_CONTIGUOUS))
+        throw std::runtime_error("ndarray->matrix converteee is not F-contiguous");
     }
     else
         throw std::runtime_error("input array is does not have dimension with stride==1");

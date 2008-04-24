@@ -146,17 +146,20 @@ namespace
           return 0;
         if (PyArray_NDIM(obj) != 2)
           return 0;
-        if (!PyArray_CHKFLAGS(obj, NPY_CONTIGUOUS))
-          return 0;
 
         if (PyArray_STRIDE(obj, 1) == PyArray_ITEMSIZE(obj))
         {
+          // row-major
           if (!is_row_major(typename MatrixType::orientation_category()))
+            return 0;
+          if (!PyArray_CHKFLAGS(obj, NPY_C_CONTIGUOUS))
             return 0;
         }
         else if (PyArray_STRIDE(obj, 0) == PyArray_ITEMSIZE(obj))
         {
           if (is_row_major(typename MatrixType::orientation_category()))
+            return 0;
+          if (!PyArray_CHKFLAGS(obj, NPY_F_CONTIGUOUS))
             return 0;
         }
         else
