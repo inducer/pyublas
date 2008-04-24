@@ -75,7 +75,7 @@ def main():
             =============
 
             See the 
-            `PyUblas Documentation <http://mathema.tician.de/software/pyublas/doc>`_
+            `PyUblas Documentation <http://tiker.net/doc/pyublas>`_
             page.
 
             PyUblasExt
