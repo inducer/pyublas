@@ -69,6 +69,16 @@ void double_numpy_vector_inplace(numpy_vector<T> x)
 
 
 
+numpy_vector<double> make_resized_vector(unsigned n)
+{
+  numpy_vector<double> result;
+  result.resize(n);
+  return result;
+}
+
+
+
+
 BOOST_PYTHON_MODULE(test_ext)
 {
   def("dbl_int", doublify<int>);
@@ -94,4 +104,6 @@ BOOST_PYTHON_MODULE(test_ext)
       doublify<ublas::vector<double> >);
   def("dbl_ublas_mat", 
       doublify<ublas::matrix<double> >);
+
+  def("make_resized_vector", make_resized_vector);
 }

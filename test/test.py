@@ -142,6 +142,15 @@ class TestMatrices(unittest.TestCase):
         except TypeError:
             pass
 
+    def test_empty_and_resize(self):
+        v = te.make_resized_vector(0)
+        assert v is None
+
+        v = te.make_resized_vector(1)
+        assert v.shape == (1,)
+
+        v = te.make_resized_vector(5)
+        assert v.shape == (5,)
 
 
 

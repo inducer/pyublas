@@ -102,10 +102,7 @@ namespace pyublas
 
       // Construction and destruction
       numpy_array()
-      {
-        m_numpy_array = boost::python::handle<>(
-            PyArray_SimpleNew(0, 0, get_typenum(T())));
-      }
+      { }
 
       numpy_array(size_type n)
       {
@@ -125,12 +122,12 @@ namespace pyublas
 
       numpy_array(size_type n, const value_type &v)
       {
-        if (size)
+        if (n)
         {
           npy_intp dims[] = { n };
           m_numpy_array = boost::python::handle<>(
               PyArray_SimpleNew(1, dims, get_typenum(T())));
-          fill(begin(), end(), v);
+          std::fill(begin(), end(), v);
         }
       }
 
@@ -185,10 +182,12 @@ namespace pyublas
       }
 
     public:
-      void resize (size_type size) {
-        resize_internal (size, value_type (), false);
+      void resize (size_type size) 
+      {
+        resize_internal (size, value_type(), false);
       }
-      void resize (size_type size, value_type init) {
+      void resize (size_type size, value_type init) 
+      {
         resize_internal (size, init, true);
       }
 
@@ -324,13 +323,13 @@ namespace pyublas
 
       // Data accessor
 
-      const boost::python::handle<> &handle() const
+      const boost::python::handle<> handle() const
       {
-        return m_numpy_array;
-      }
-      boost::python::handle<> &handle() 
-      {
-        return m_numpy_array;
+        if (m_numpy_array.get())
+          return m_numpy_array;
+        else
+          return boost::python::handle<>(
+              boost::python::borrowed(Py_None));
       }
   };
 
@@ -426,14 +425,114 @@ namespace pyublas
 
 
   // derived vector types -----------------------------------------------------
+  namespace detail
+  {
+    template <class Derived, class Super>
+    struct vector_functionality
+    {
+      // numpy array metadata
+      typename Super::size_type ndim() const 
+      { return static_cast<const Derived *>(this)->array().ndim(); }
+      const npy_intp *dims() const 
+      { return static_cast<const Derived *>(this)->array().dims(); }
+      const npy_intp *strides() const 
+      { return static_cast<const Derived *>(this)->array().strides(); }
+      npy_intp min_stride() const
+      { return static_cast<const Derived *>(this)->array().min_stride(); }
+      npy_intp itemsize() const
+      { return sizeof(typename Derived::value_type); }
+      bool writable() const 
+      { return static_cast<const Derived *>(this)->array().writable(); }
+
+      // several-d subscripts
+      typename Super::value_type &sub(npy_intp i) 
+      { return *reinterpret_cast<typename Super::value_type *>(
+          PyArray_GETPTR1(
+            static_cast<const Derived *>(this)->array(), 
+            i)); 
+      }
+      const typename Super::value_type &sub(npy_intp i) const
+      { 
+        return *reinterpret_cast<const typename Super::value_type *>(
+            PyArray_GETPTR1(
+              static_cast<const Derived *>(this)->data(), 
+              i)); 
+      }
+      typename Super::value_type &sub(npy_intp i, npy_intp j) 
+      { 
+        return *reinterpret_cast<typename Super::value_type *>(
+            PyArray_GETPTR2(
+              static_cast<const Derived *>(this)->array(), 
+              i, j)); 
+      }
+      const typename Super::value_type &sub(npy_intp i, npy_intp j) const
+      { 
+        return *reinterpret_cast<const typename Super::value_type *>(
+            PyArray_GETPTR2(
+              static_cast<const Derived *>(this)->array(), 
+              i, j)); 
+      }
+      typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k) 
+      { 
+        return *reinterpret_cast<typename Super::value_type *>(
+            PyArray_GETPTR3(
+              static_cast<const Derived *>(this)->array(), 
+              i, j, k)); 
+      }
+      const typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k) const
+      { 
+        return *reinterpret_cast<const typename Super::value_type *>(
+            PyArray_GETPTR3(
+              static_cast<const Derived *>(this)->array(), 
+              i, j, k)); 
+      }
+      typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
+      { 
+        return *reinterpret_cast<typename Super::value_type *>(
+            PyArray_GETPTR4(
+              static_cast<const Derived *>(this)->array(), 
+              i, j, k, l)); 
+      }
+      const typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) const
+      { 
+        return *reinterpret_cast<const typename Super::value_type *>(
+          PyArray_GETPTR4(
+            static_cast<const Derived *>(this)->array(), 
+            i, j, k, l)); 
+      }
+
+      // shape manipulation 
+      void reshape(int ndim_, const npy_intp *dims_, NPY_ORDER order=NPY_CORDER)
+      {
+        static_cast<const Derived *>(this)->data().reshape(ndim_, dims_, order);
+      }
+
+      boost::python::handle<> to_python() const
+      {
+        return static_cast<const Derived *>(this)->array().handle();
+      }
+    };
+  }
+
+
+
+
   template <class T>
   class numpy_vector
-  : public boost::numeric::ublas::vector<T, numpy_array<T> >
+  : public boost::numeric::ublas::vector<T, numpy_array<T> >,
+  public detail::vector_functionality<numpy_vector<T>,  
+    boost::numeric::ublas::vector<T, numpy_array<T> > >
   {
     private:
       typedef 
         boost::numeric::ublas::vector<T, numpy_array<T> >
         super;
+      typedef 
+        detail::vector_functionality<numpy_vector<T>,  
+          boost::numeric::ublas::vector<T, numpy_array<T> > 
+        >
+        func;
+
     public:
       numpy_vector ()
       {}
@@ -471,59 +570,6 @@ namespace pyublas
       : super(ae)
       { }
 
-      // numpy array metadata
-      typename super::size_type ndim() const 
-      { return this->data().ndim(); }
-      const npy_intp *dims() const 
-      { return this->data().dims(); }
-      const npy_intp *strides() const 
-      { return this->data().strides(); }
-      npy_intp min_stride() const
-      { return this->data().min_stride(); }
-      npy_intp itemsize() const
-      { return sizeof(T); }
-      bool writable() const 
-      { return this->data().writable(); }
-
-      // several-d subscripts
-      T &sub(npy_intp i) 
-      { return *reinterpret_cast<T*>(PyArray_GETPTR1(this->data(), i)); }
-      const T &sub(npy_intp i) const
-      { return *reinterpret_cast<const T*>(PyArray_GETPTR1(this->data(), i)); }
-      T &sub(npy_intp i, npy_intp j) 
-      { return *reinterpret_cast<T*>(PyArray_GETPTR2(this->data(), i, j)); }
-      const T &sub(npy_intp i, npy_intp j) const
-      { return *reinterpret_cast<const T*>(PyArray_GETPTR2(this->data(), i, j)); }
-      T &sub(npy_intp i, npy_intp j, npy_intp k) 
-      { return *reinterpret_cast<T*>(PyArray_GETPTR3(this->data(), i, j, k)); }
-      const T &sub(npy_intp i, npy_intp j, npy_intp k) const
-      { return *reinterpret_cast<const T*>(PyArray_GETPTR3(this->data(), i, j, k)); }
-      T &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
-      { return *reinterpret_cast<T*>(PyArray_GETPTR4(this->data(), i, j, k, l)); }
-      const T &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) const
-      { return *reinterpret_cast<const T*>(PyArray_GETPTR4(this->data(), i, j, k, l)); }
-
-      // shape manipulation 
-      void reshape(int ndim_, const npy_intp *dims_, NPY_ORDER order=NPY_CORDER)
-      {
-        this->data().reshape(ndim_, dims_, order);
-      }
-
-      // as-strided accessor
-      boost::numeric::ublas::vector_slice<numpy_vector>
-        as_strided()
-      {
-        npy_intp ms = min_stride()/sizeof(T);
-        return subslice(*this, 0, ms, this->size()/ms);
-      }
-
-      boost::numeric::ublas::vector_slice<const numpy_vector>
-        as_strided() const
-      {
-        npy_intp ms = min_stride()/sizeof(T);
-        return subslice(*this, 0, ms, this->size()/ms);
-      }
-
       // as-ublas accessor
       super &as_ublas() 
       { return *this; }
@@ -531,11 +577,97 @@ namespace pyublas
       const super &as_ublas() const
       { return *this; }
 
-      boost::python::handle<> to_python() const
+      boost::numeric::ublas::vector_slice<numpy_vector>
+        as_strided()
       {
-        return this->data().handle();
+        npy_intp ms = func::min_stride()/sizeof(T);
+        return subslice(*this, 0, ms, this->size()/ms);
       }
+
+      boost::numeric::ublas::vector_slice<const numpy_vector>
+        as_strided() const
+      {
+        npy_intp ms = func::min_stride()/sizeof(T);
+        return subslice(*this, 0, ms, this->size()/ms);
+      }
+
+      numpy_array<T> &array()
+      { return super::data(); }
+
+      numpy_array<T> const &array() const
+      { return super::data(); }
   };
+
+
+
+#if 0
+  template <class T>
+  class numpy_strided_vector
+  : public boost::numeric::ublas::vector_slice< numpy_vector<T> >,
+  public detail::vector_functionality<numpy_strided_vector<T>,
+    boost::numeric::ublas::vector_slice< numpy_vector<T> >
+   >
+  {
+    private:
+      typedef 
+        boost::numeric::ublas::vector_slice< numpy_vector<T> >
+        super;
+      typename super::vector_type m_vector;
+
+    public:
+      numpy_strided_vector ()
+        : super(m_vector)
+      {}
+
+      // observe that PyObject handles are implicitly convertible
+      // to numpy_array
+      numpy_strided_vector(const numpy_array<T> &s)
+        : super(s.size(), s)
+      {
+      }
+
+      numpy_strided_vector(int ndim_, const npy_intp *dims_)
+        : super(size_from_dims(ndim_, dims_), 
+            numpy_array<T>(ndim_, dims_))
+      { }
+
+      explicit 
+        numpy_strided_vector(typename super::size_type size)
+        : super(size) 
+        { }
+
+      numpy_strided_vector (
+          typename super::size_type size, 
+          const typename super::value_type &init)
+        : super(size, init) 
+      {}
+
+
+      numpy_strided_vector (const numpy_strided_vector &v)
+        : super(v)
+      { }
+
+      template<class AE>
+      numpy_strided_vector(const boost::numeric::ublas::vector_expression<AE> &ae)
+      : super(ae)
+      { }
+
+      // as-ublas accessor
+      super &as_ublas() 
+      { return *this; }
+
+      const super &as_ublas() const
+      { return *this; }
+      /*
+      boost::numeric::ublas::vector_slice<numpy_vector>
+        as_strided()
+      {
+        npy_intp ms = min_stride()/sizeof(T);
+        return subslice(*this, 0, ms, this->size()/ms);
+      }
+      */
+  };
+#endif
 
 
 

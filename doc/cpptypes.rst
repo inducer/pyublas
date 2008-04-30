@@ -86,6 +86,11 @@ a C++ member function that should normally be called
                    constructor numpy_array(size_type n, const value_type &v)
                    constructor numpy_array(int ndim, const npy_intp *dims)
                    constructor numpy_array(const boost::python::handle<> &obj)
+        
+        Construct a new :ctype:`numpy_array`. If you use the
+        empty constructor, the array is in an invalid state until
+        :cfunc:`numpy_array_resize` is called. Calling any other
+        member function will result in undefined behavior.
 
     .. cfunction:: size_type numpy_array_ndim()
 
@@ -119,11 +124,13 @@ a C++ member function that should normally be called
 
         A ``const`` member function.
 
-    .. cfunction:: const boost::python::handle<> &numpy_array_handle()
+    .. cfunction:: boost::python::handle<> numpy_array_handle() 
+
+        Return a :ctype:`handle` to the underlying Numpy array
+        object. If the array is unitialized, the function may
+        return a handle to *None*.
 
         A ``const`` member function.
-
-    .. cfunction:: boost::python::handle<> &numpy_array_handle() 
 
 .. ctype:: numpy_vector
 
@@ -145,6 +152,10 @@ a C++ member function that should normally be called
         Observe that PyObject handles are implicitly convertible
         to :ctype:`numpy_array`, so that you can invoke the 
         constructor simply by feeding it a ``boost::python::handle``.
+
+        If you use the empty constructor, the vector is in an invalid
+        state until :cfunc:`numpy_vector_resize` is called. Calling any
+        other member function will result in undefined behavior.
 
     .. cfunction:: size_type numpy_vector_ndim()
 
@@ -221,7 +232,8 @@ a C++ member function that should normally be called
 
         Return a Boost.Python ``handle`` (which is essentially an
         auto-refcounting ``PyObject *``) to the underlying Numpy
-        array.
+        array.  If the matrix is empty, the function may return a 
+        handle to *None*.
 
         A ``const`` member function.
 
@@ -242,11 +254,19 @@ a C++ member function that should normally be called
         to :ctype:`numpy_array`, so that you can invoke the 
         constructor simply by feeding it a ``boost::python::handle``.
 
+        If you use the empty constructor, the matrix is in an invalid
+        state until :cfunc:`numpy_matrix_resize` is called. Calling any
+        other member function will result in undefined behavior.
+
     .. cfunction:: boost::matrix<ValueType, Orientation> &numpy_matrix_as_ublas() 
 
         Also available as a ``const`` member function.
 
     .. cfunction:: boost::python::handle<> numpy_matrix_to_python()
+
+        Return a :ctype:`handle` to the underlying Numpy array
+        object. If the matrix is empty, the function may
+        return a handle to *None*.
 
         A ``const`` member function.
 
