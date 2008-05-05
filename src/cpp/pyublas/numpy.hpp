@@ -200,6 +200,8 @@ namespace pyublas
       }
 
       // metadata
+      bool is_valid() const
+      { return m_numpy_array.get(); }
       size_type ndim() const 
       { return PyArray_NDIM(m_numpy_array.get()); }
       const npy_intp *dims() const 
@@ -325,7 +327,7 @@ namespace pyublas
 
       const boost::python::handle<> handle() const
       {
-        if (m_numpy_array.get())
+        if (is_valid())
           return m_numpy_array;
         else
           return boost::python::handle<>(
@@ -431,6 +433,8 @@ namespace pyublas
     struct vector_functionality
     {
       // numpy array metadata
+      bool is_valid() const 
+      { return static_cast<const Derived *>(this)->array().is_valid(); }
       typename Super::size_type ndim() const 
       { return static_cast<const Derived *>(this)->array().ndim(); }
       const npy_intp *dims() const 
@@ -559,7 +563,6 @@ namespace pyublas
           const typename super::value_type &init)
         : super(size, init) 
       {}
-
 
       numpy_vector (const numpy_vector &v)
         : super(v)
@@ -732,6 +735,8 @@ namespace pyublas
       const super &as_ublas() const
       { return *this; }
 
+      bool is_valid() const
+      { return this->data().is_valid(); }
       boost::python::handle<> to_python() const
       { return matrix_to_python(*this); }
   };
