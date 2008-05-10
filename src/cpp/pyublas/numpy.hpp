@@ -452,56 +452,56 @@ namespace pyublas
       typename Super::value_type &sub(npy_intp i) 
       { return *reinterpret_cast<typename Super::value_type *>(
           PyArray_GETPTR1(
-            static_cast<const Derived *>(this)->array(), 
+            static_cast<const Derived *>(this)->array().handle().get(), 
             i)); 
       }
       const typename Super::value_type &sub(npy_intp i) const
       { 
         return *reinterpret_cast<const typename Super::value_type *>(
             PyArray_GETPTR1(
-              static_cast<const Derived *>(this)->data(), 
+              static_cast<const Derived *>(this)->data().handle().get(), 
               i)); 
       }
       typename Super::value_type &sub(npy_intp i, npy_intp j) 
       { 
         return *reinterpret_cast<typename Super::value_type *>(
             PyArray_GETPTR2(
-              static_cast<const Derived *>(this)->array(), 
+              static_cast<const Derived *>(this)->array().handle().get(), 
               i, j)); 
       }
       const typename Super::value_type &sub(npy_intp i, npy_intp j) const
       { 
         return *reinterpret_cast<const typename Super::value_type *>(
             PyArray_GETPTR2(
-              static_cast<const Derived *>(this)->array(), 
+              static_cast<const Derived *>(this)->array().handle().get(), 
               i, j)); 
       }
       typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k) 
       { 
         return *reinterpret_cast<typename Super::value_type *>(
             PyArray_GETPTR3(
-              static_cast<const Derived *>(this)->array(), 
+              static_cast<const Derived *>(this)->array().handle().get(), 
               i, j, k)); 
       }
       const typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k) const
       { 
         return *reinterpret_cast<const typename Super::value_type *>(
             PyArray_GETPTR3(
-              static_cast<const Derived *>(this)->array(), 
+              static_cast<const Derived *>(this)->array().handle().get(), 
               i, j, k)); 
       }
       typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
       { 
         return *reinterpret_cast<typename Super::value_type *>(
             PyArray_GETPTR4(
-              static_cast<const Derived *>(this)->array(), 
+              static_cast<const Derived *>(this)->array().handle().get(), 
               i, j, k, l)); 
       }
       const typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) const
       { 
         return *reinterpret_cast<const typename Super::value_type *>(
           PyArray_GETPTR4(
-            static_cast<const Derived *>(this)->array(), 
+            static_cast<const Derived *>(this)->array().handle().get(), 
             i, j, k, l)); 
       }
 
