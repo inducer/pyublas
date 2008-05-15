@@ -24,7 +24,7 @@ Sparse Matrix wrappers
 
 **CAUTION:** In PyUblas version 0.91 and later, the sparse wrappers are an
 optional feature that has to be enabled at `configure` time with the option
-`--with-sparse-wrappers`. You may check for their presence using this 
+:option:`--with-sparse-wrappers`. You may check for their presence using this
 function:
 
 .. function:: has_sparse_wrappers()

@@ -124,7 +124,9 @@ htmlhelp_basename = 'PyUblasdoc'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
-#latex_documents = []
+latex_documents = [("index", "pyublas.tex", 
+    "PyUblas documentation", "Andreas Kloeckner",
+    "manual")]
 
 # Additional stuff for the LaTeX preamble.
 #latex_preamble = ''
