@@ -50,6 +50,19 @@ namespace
       data->convertible = storage;
     }
 
+    static void construct_invalid_ok(
+        PyObject* obj, 
+        py::converter::rvalue_from_python_stage1_data* data)
+    {
+      typedef invalid_ok<target_type> inv_ok;
+      void* storage = ((py::converter::rvalue_from_python_storage<inv_ok>*)data)->storage.bytes;
+
+      new (storage) inv_ok(target_type(py::handle<>(py::borrowed(obj))));
+
+      // record successful construction
+      data->convertible = storage;
+    }
+
     template <class RealTgtType>
     static void construct_indirect(
         PyObject* obj, 
@@ -94,15 +107,19 @@ namespace
     public:
       static void *check(PyObject* obj)
       {
-        if (obj == Py_None)
-          return obj;
-
         if (!PyArray_Check(obj))
           return 0;
         if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
           return 0;
 
         return obj;
+      }
+
+      static void *check_invalid_ok(PyObject* obj)
+      {
+        if (obj == Py_None)
+          return obj;
+        return check(obj);
       }
 
       // needs to be overridden to copy strided version
@@ -137,9 +154,6 @@ namespace
     public:
       static void *check(PyObject* obj)
       {
-        if (obj == Py_None)
-          return obj;
-
         if (!PyArray_Check(obj))
           return 0;
         if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
@@ -171,6 +185,12 @@ namespace
         return obj;
       }
 
+      static void *check_invalid_ok(PyObject* obj)
+      {
+        if (obj == Py_None)
+          return obj;
+        return check(obj);
+      }
   };
 
 
@@ -186,6 +206,15 @@ namespace
         &Converter::check
         , &Converter::construct
         , py::type_id<typename Converter::target_type>()
+#ifndef BOOST_PYTHON_NO_PY_SIGNATURES
+        , &get_PyArray_Type
+#endif
+        );
+
+    py::converter::registry::push_back(
+        &Converter::check_invalid_ok
+        , &Converter::construct_invalid_ok
+        , py::type_id<invalid_ok<typename Converter::target_type> >()
 #ifndef BOOST_PYTHON_NO_PY_SIGNATURES
         , &get_PyArray_Type
 #endif

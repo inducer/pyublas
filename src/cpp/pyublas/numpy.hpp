@@ -755,6 +755,34 @@ namespace pyublas
 
 
 
+  // conversion tags ----------------------------------------------------------
+  template <class Contained>
+  class invalid_ok
+  {
+    private:
+      Contained m_contained;
+
+    public:
+      typedef Contained contained_type;
+
+      invalid_ok(Contained c)
+        : m_contained(c)
+      { }
+
+      const Contained &operator*() const
+      {
+        return m_contained;
+      }
+
+      Contained &operator*()
+      {
+        return m_contained;
+      }
+  };
+
+
+
+
   // data member treatment ----------------------------------------------------
   template <class T, class C>
   class by_value_rw_member_visitor 
