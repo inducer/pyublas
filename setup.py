@@ -30,7 +30,7 @@ def main():
     from aksetup_helper import hack_distutils, get_config, setup, \
             NumpyExtension
 
-    hack_distutils()
+    hack_distutils(debug=True)
     conf = get_config(get_config_schema())
 
     INCLUDE_DIRS = ["src/cpp"] + conf["BOOST_INC_DIR"] 

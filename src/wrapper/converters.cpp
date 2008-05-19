@@ -94,13 +94,12 @@ namespace
     public:
       static void *check(PyObject* obj)
       {
+        if (obj == Py_None)
+          return obj;
+
         if (!PyArray_Check(obj))
           return 0;
         if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
-          return 0;
-        if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED))
-          return 0;
-        if (PyArray_CHKFLAGS(obj, NPY_NOTSWAPPED))
           return 0;
 
         return obj;
@@ -138,11 +137,12 @@ namespace
     public:
       static void *check(PyObject* obj)
       {
+        if (obj == Py_None)
+          return obj;
+
         if (!PyArray_Check(obj))
           return 0;
         if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
-          return 0;
-        if (!PyArray_CHKFLAGS(obj, NPY_ALIGNED))
           return 0;
         if (PyArray_NDIM(obj) != 2)
           return 0;

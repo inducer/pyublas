@@ -139,6 +139,14 @@ namespace pyublas
       numpy_array(const boost::python::handle<> &obj)
         : m_numpy_array(obj)
       {
+        if (!obj.get())
+          return;
+        if (obj.get() == Py_None)
+        {
+          m_numpy_array = boost::python::handle<>();
+          return;
+        }
+
         if (!PyArray_Check(obj.get()))
           PYUBLAS_PYERROR(TypeError, "argument is not a numpy array");
         if (PyArray_TYPE(obj.get()) != get_typenum(T()))
@@ -193,6 +201,9 @@ namespace pyublas
 
       size_type size() const 
       { 
+        if (!is_valid())
+          return 0;
+
         if (ndim() != 0)
           return min_stride()/sizeof(T)*size_from_dims(ndim(), dims());
         else
