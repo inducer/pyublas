@@ -778,6 +778,16 @@ namespace pyublas
       {
         return m_contained;
       }
+
+      const Contained *operator->() const
+      {
+        return &m_contained;
+      }
+
+      Contained *operator->()
+      {
+        return &m_contained;
+      }
   };
 
 
