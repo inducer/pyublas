@@ -127,16 +127,16 @@ case. Therefore, this is not the default behavior.
 
 There are three ways of dealing with this situation:
 
-* By invoking the :cfunc:`numpy_vector_as_strided` member function,
+* By invoking the :cfunc:`numpy_vector::as_strided` member function,
   you can obtain a view of the vector that takes the numpy array's
   smallest stride into account, making it *seem* contiguous.
 
 * You can access the array exclusively through the 
-  :cfunc:`numpy_vector_sub` family of member functions.
+  :cfunc:`numpy_vector::sub` family of member functions.
   These take the striding into account, too.
 
 * You can obtain stride information by calling 
-  :cfunc:`numpy_vector_strides` and do the striding manually.
+  :cfunc:`numpy_vector::strides` and do the striding manually.
 
 The PyUblas test suite explores many of these corner cases that
 arise here. You're welcome to take a look.

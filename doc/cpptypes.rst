@@ -58,11 +58,6 @@ Reference Documentation
 
 ``#include <pyublas/numpy.hpp>``
 
-Note that due to the limitations of this document format, 
-a C++ member function that should normally be called 
-``numpy_vector::as_strided`` is here written as 
-``numpy_vector_as_strided``.
-
 .. ctype:: numpy_array
   
     ``template <class ValueType>``, in namespace ``pyublas``.
@@ -89,42 +84,42 @@ a C++ member function that should normally be called
         
         Construct a new :ctype:`numpy_array`. If you use the
         empty constructor, the array is in an invalid state until
-        :cfunc:`numpy_array_resize` is called. Calling any other
+        :cfunc:`numpy_array::resize` is called. Calling any other
         member function will result in undefined behavior.
 
-    .. cfunction:: size_type numpy_array_ndim()
+    .. cfunction:: size_type numpy_array::ndim()
 
         A ``const`` member function.
         
-    .. cfunction:: const npy_intp *numpy_array_dims()
+    .. cfunction:: const npy_intp *numpy_array::dims()
 
         A ``const`` member function.
 
-    .. cfunction:: const npy_intp *numpy_array_strides()
+    .. cfunction:: const npy_intp *numpy_array::strides()
 
         A ``const`` member function.
 
-    .. cfunction:: npy_intp numpy_array_min_stride()
+    .. cfunction:: npy_intp numpy_array::min_stride()
 
         A ``const`` member function.
 
-    .. cfunction:: npy_intp numpy_array_itemsize()
+    .. cfunction:: npy_intp numpy_array::itemsize()
 
         A ``const`` member function.
 
-    .. cfunction:: bool numpy_array_writable()
+    .. cfunction:: bool numpy_array::writable()
 
         A ``const`` member function.
 
-    .. cfunction:: void numpy_array_reshape(int ndim, const npy_intp *dims, NPY_ORDER order=NPY_CORDER)
+    .. cfunction:: void numpy_array::reshape(int ndim, const npy_intp *dims, NPY_ORDER order=NPY_CORDER)
 
-    .. cfunction:: value_type *numpy_array_data()
+    .. cfunction:: value_type *numpy_array::data()
 
-    .. cfunction:: const value_type *numpy_array_data()
+    .. cfunction:: const value_type *numpy_array::data()
 
         A ``const`` member function.
 
-    .. cfunction:: boost::python::handle<> numpy_array_handle() 
+    .. cfunction:: boost::python::handle<> numpy_array::handle() 
 
         Return a :ctype:`handle` to the underlying Numpy array
         object. If the array is unitialized, the function may
@@ -136,7 +131,7 @@ a C++ member function that should normally be called
 
     ``template <class ValueType>``, in namespace ``pyublas``.
 
-    .. cfunction:: constructor numpy_vector_constructor()
+    .. cfunction:: constructor numpy_vector()
                    constructor numpy_vector(const numpy_array<ValueType> &s)
                    constructor numpy_vector(int ndim, const npy_intp *dims)
                    explicit_constructor numpy_vector(typename super::size_type size)
@@ -154,53 +149,53 @@ a C++ member function that should normally be called
         constructor simply by feeding it a ``boost::python::handle``.
 
         If you use the empty constructor, the vector is in an invalid
-        state until :cfunc:`numpy_vector_resize` is called. Calling any
+        state until :cfunc:`numpy_vector::resize` is called. Calling any
         other member function will result in undefined behavior.
 
-    .. cfunction:: size_type numpy_vector_ndim()
+    .. cfunction:: size_type numpy_vector::ndim()
 
         Return the number of dimensions of this array.
 
         A ``const`` member function.
         
-    .. cfunction:: const npy_intp *numpy_vector_dims()
+    .. cfunction:: const npy_intp *numpy_vector::dims()
 
-        Return an array of :cfunc:`numpy_vector_ndim` entries,
+        Return an array of :cfunc:`numpy_vector::ndim` entries,
         each of which is the size of the array along one dimension. 
         in *elements*. 
 
         A ``const`` member function.
 
-    .. cfunction:: const npy_intp *numpy_vector_strides()
+    .. cfunction:: const npy_intp *numpy_vector::strides()
 
-        Return an array of :cfunc:`numpy_vector_ndim` entries,
+        Return an array of :cfunc:`numpy_vector::ndim` entries,
         each of which is the stride along one dimension, in 
-        *bytes*. Divide by :cfunc:`numpy_vector_itemsize` 
+        *bytes*. Divide by :cfunc:`numpy_vector::itemsize` 
         to convert this to element-wise strides.
 
         A ``const`` member function.
 
-    .. cfunction:: npy_intp numpy_vector_min_stride()
+    .. cfunction:: npy_intp numpy_vector::min_stride()
 
         The smallest stride used in the underlying array, in bytes.
-        Divide by :cfunc:`numpy_vector_itemsize` to convert this to
+        Divide by :cfunc:`numpy_vector::itemsize` to convert this to
         element-wise strides.
 
         A ``const`` member function.
 
-    .. cfunction:: npy_intp numpy_vector_itemsize()
+    .. cfunction:: npy_intp numpy_vector::itemsize()
         
         Return the size (in bytes) of each element of the array.
 
         A ``const`` member function.
-    .. cfunction:: bool numpy_vector_writable()
+    .. cfunction:: bool numpy_vector::writable()
 
         A ``const`` member function.
 
-    .. cfunction:: ValueType &numpy_vector_sub(npy_intp i) 
-                   ValueType &numpy_vector_sub(npy_intp i, npy_intp j) 
-                   ValueType &numpy_vector_sub(npy_intp i, npy_intp j, npy_intp k) 
-                   ValueType &numpy_vector_sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
+    .. cfunction:: ValueType &numpy_vector::sub(npy_intp i) 
+                   ValueType &numpy_vector::sub(npy_intp i, npy_intp j) 
+                   ValueType &numpy_vector::sub(npy_intp i, npy_intp j, npy_intp k) 
+                   ValueType &numpy_vector::sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
 
         Return the element at the index (i), (i,j), (i,j,k),
         (i,j,k,l). It is up to you to ensure that the array
@@ -209,26 +204,26 @@ a C++ member function that should normally be called
 
         Also available as ``const`` member functions.
 
-    .. cfunction:: void numpy_vector_reshape(int ndim, const npy_intp *dims, NPY_ORDER order=NPY_CORDER)
+    .. cfunction:: void numpy_vector::reshape(int ndim, const npy_intp *dims, NPY_ORDER order=NPY_CORDER)
         
         Same operation as :func:`numpy.reshape`.
 
-    .. cfunction:: boost::numeric::ublas::vector_slice<numpy_vector> numpy_vector_as_strided()
+    .. cfunction:: boost::numeric::ublas::vector_slice<numpy_vector> numpy_vector::as_strided()
         
         Return a view of the array that seems contiguous, by 
-        only looking at every :cfunc:`numpy_vector_min_stride`'th 
+        only looking at every :cfunc:`numpy_vector::min_stride`'th 
         element.
 
         Also available as a ``const`` member function.
 
-    .. cfunction:: boost::vector<ValueType> &numpy_vector_as_ublas() 
+    .. cfunction:: boost::vector<ValueType> &numpy_vector::as_ublas() 
 
         Downcast this instance to the underlying 
         ``boost::numeric::ublas::vector<ValueType>``.
 
         Also available as a ``const`` member function.
 
-    .. cfunction:: boost::python::handle<> numpy_vector_to_python()
+    .. cfunction:: boost::python::handle<> numpy_vector::to_python()
 
         Return a Boost.Python ``handle`` (which is essentially an
         auto-refcounting ``PyObject *``) to the underlying Numpy
@@ -242,27 +237,27 @@ a C++ member function that should normally be called
     ``template <class ValueType, class Orientation=boost::numeric::ublas::row_major>``, 
     in namespace ``pyublas``.
 
-    .. cfunction:: numpy_matrix()
-                   numpy_matrix(size_type size1, size_type size2)
-                   numpy_matrix(size_type size1, size_type size2, const value_type &init)
-                   numpy_matrix(size_type size1, size_type size2, const array_type &data)
-                   numpy_matrix(const typename super::array_type &data)
-                   numpy_matrix_constructor(const numpy_matrix &m)
-                   numpy_matrix_constructor(const boost::numeric::ublas::matrix_expression<AE> &ae)
+    .. cfunction:: constructor numpy_matrix()
+                   constructor numpy_matrix(size_type size1, size_type size2)
+                   constructor numpy_matrix(size_type size1, size_type size2, const value_type &init)
+                   constructor numpy_matrix(size_type size1, size_type size2, const array_type &data)
+                   constructor numpy_matrix(const typename super::array_type &data)
+                   constructor numpy_matrix(const numpy_matrix &m)
+                   constructor numpy_matrix(const boost::numeric::ublas::matrix_expression<AE> &ae)
 
         Observe that PyObject handles are implicitly convertible
         to :ctype:`numpy_array`, so that you can invoke the 
         constructor simply by feeding it a ``boost::python::handle``.
 
         If you use the empty constructor, the matrix is in an invalid
-        state until :cfunc:`numpy_matrix_resize` is called. Calling any
+        state until :cfunc:`numpy_matrix::resize` is called. Calling any
         other member function will result in undefined behavior.
 
-    .. cfunction:: boost::matrix<ValueType, Orientation> &numpy_matrix_as_ublas() 
+    .. cfunction:: boost::matrix<ValueType, Orientation> &numpy_matrix::as_ublas() 
 
         Also available as a ``const`` member function.
 
-    .. cfunction:: boost::python::handle<> numpy_matrix_to_python()
+    .. cfunction:: boost::python::handle<> numpy_matrix::to_python()
 
         Return a :ctype:`handle` to the underlying Numpy array
         object. If the matrix is empty, the function may
