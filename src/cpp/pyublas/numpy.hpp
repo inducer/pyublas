@@ -34,14 +34,23 @@
 
 
 
+namespace
+{
+  static struct _pyublas_array_importer
+  {
+    _pyublas_array_importer()
+    { 
+      import_array();
+    }
+  } _array_importer;
+}
+
+
+
+
+
 namespace pyublas
 {
-  static struct array_importer
-  {
-    array_importer()
-    { import_array(); }
-  } _array_importer;
-
   inline NPY_TYPES get_typenum(bool) { return NPY_BOOL; }
   inline NPY_TYPES get_typenum(npy_bool) { return NPY_BOOL; }
   inline NPY_TYPES get_typenum(npy_byte) { return NPY_BYTE; }
@@ -889,7 +898,6 @@ namespace boost { namespace numeric { namespace bindings { namespace traits {
 }}}}  
 
 #endif
-
 
 
 
