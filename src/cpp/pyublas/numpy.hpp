@@ -542,6 +542,12 @@ namespace pyublas
 
 
   template <class T>
+  class numpy_strided_vector;
+
+
+
+
+  template <class T>
   class numpy_vector
   : public boost::numeric::ublas::vector<T, numpy_array<T> >,
   public detail::vector_functionality<numpy_vector<T>,  
@@ -600,11 +606,15 @@ namespace pyublas
       const super &as_ublas() const
       { return *this; }
 
-      boost::numeric::ublas::vector_slice<numpy_vector>
-        as_strided()
+      boost::numeric::ublas::slice stride_slice() const
       {
         npy_intp ms = func::min_stride()/sizeof(T);
-        return subslice(*this, 0, ms, this->size()/ms);
+        return boost::numeric::ublas::slice(0, ms, this->size()/ms);
+      }
+
+      numpy_strided_vector<T> as_strided()
+      {
+        return numpy_strided_vector<T>(*this, stride_slice());
       }
 
       boost::numeric::ublas::vector_slice<const numpy_vector>
@@ -623,56 +633,63 @@ namespace pyublas
 
 
 
-#if 0
+  namespace detail
+  {
+    /* This is dumb, but necessary: In numpy_strided_vector, the 
+     * vector needs to be initialized before the slice referring 
+     * to it. But if the vector is a member, and the slice is a 
+     * base class, that won't happen. Therefore, move the vector
+     * to an artificial base class that can be specified first in
+     * the base-specifier-list. (cf. 12.6.2.5 in '96 working paper)
+     */
+    template <class V>
+    class vector_holder
+    {
+      public:
+        V m_vector;
+
+        vector_holder(const V &v)
+          : m_vector(v)
+        { }
+    };
+  }
+
+
+
+
   template <class T>
   class numpy_strided_vector
-  : public boost::numeric::ublas::vector_slice< numpy_vector<T> >,
+  : public detail::vector_holder<numpy_vector<T> >,
+    public boost::numeric::ublas::vector_slice< numpy_vector<T> >,
   public detail::vector_functionality<numpy_strided_vector<T>,
     boost::numeric::ublas::vector_slice< numpy_vector<T> >
    >
   {
     private:
       typedef 
+        detail::vector_holder<numpy_vector<T> >
+        vector_holder;
+      typedef 
         boost::numeric::ublas::vector_slice< numpy_vector<T> >
         super;
-      typename super::vector_type m_vector;
 
     public:
-      numpy_strided_vector ()
-        : super(m_vector)
-      {}
-
       // observe that PyObject handles are implicitly convertible
       // to numpy_array
       numpy_strided_vector(const numpy_array<T> &s)
-        : super(s.size(), s)
+        : vector_holder(s),
+        super(this->m_vector, boost::numeric::ublas::slice(0, 1, s.size()))
       {
       }
 
-      numpy_strided_vector(int ndim_, const npy_intp *dims_)
-        : super(size_from_dims(ndim_, dims_), 
-            numpy_array<T>(ndim_, dims_))
+      numpy_strided_vector(const numpy_strided_vector &v)
+        : vector_holder(v.m_vector),
+        super(this->m_vector, boost::numeric::ublas::slice(
+              v.start(), v.stride(), v.size()))
       { }
 
-      explicit 
-        numpy_strided_vector(typename super::size_type size)
-        : super(size) 
-        { }
-
-      numpy_strided_vector (
-          typename super::size_type size, 
-          const typename super::value_type &init)
-        : super(size, init) 
-      {}
-
-
-      numpy_strided_vector (const numpy_strided_vector &v)
-        : super(v)
-      { }
-
-      template<class AE>
-      numpy_strided_vector(const boost::numeric::ublas::vector_expression<AE> &ae)
-      : super(ae)
+      numpy_strided_vector(numpy_vector<T> &v, boost::numeric::ublas::slice const &s)
+        : vector_holder(v), super(this->m_vector, s)
       { }
 
       // as-ublas accessor
@@ -681,16 +698,13 @@ namespace pyublas
 
       const super &as_ublas() const
       { return *this; }
-      /*
-      boost::numeric::ublas::vector_slice<numpy_vector>
-        as_strided()
-      {
-        npy_intp ms = min_stride()/sizeof(T);
-        return subslice(*this, 0, ms, this->size()/ms);
-      }
-      */
+
+      numpy_array<T> &array()
+      { return this->m_vector.data(); }
+
+      numpy_array<T> const &array() const
+      { return this->m_vector.data(); }
   };
-#endif
 
 
 

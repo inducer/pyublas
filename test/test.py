@@ -36,12 +36,12 @@ class TestMatrices(unittest.TestCase):
         assert dbl_1[0] == 2
 
         # everything preserved
-        dbl_2 = te.dbl_numpy_vec_2(a)
+        dbl_2 = te.dbl_numpy_vec_keep_shape_1(a)
         assert dbl_2.shape == ()
         assert dbl_2[()] == 2
 
         # everything preserved
-        dbl_3 = te.dbl_numpy_vec_3(a)
+        dbl_3 = te.dbl_numpy_vec_keep_shape_2(a)
         assert dbl_3.shape == ()
         assert dbl_3[()] == 2
 
@@ -55,12 +55,12 @@ class TestMatrices(unittest.TestCase):
         assert (dbl_1 == 2*a_orig).all()
 
         # only slice multiplied
-        dbl_2 = te.dbl_numpy_vec_2(a)
+        dbl_2 = te.dbl_numpy_vec_keep_shape_1(a)
         assert dbl_2.shape == (5,)
         assert (dbl_2 == 2*a).all()
 
         # same here
-        dbl_3 = te.dbl_numpy_vec_3(a)
+        dbl_3 = te.dbl_numpy_vec_keep_shape_2(a)
         assert dbl_3.shape == (5,)
         assert (dbl_3 == 2*a).all()
 
@@ -69,11 +69,22 @@ class TestMatrices(unittest.TestCase):
         assert dbl_4.shape == (5,)
         assert (dbl_4 == 2*a).all()
 
+        # strided vector should automatically respect strides
+        dbl_5 = te.dbl_numpy_strided_vec(a)
+        assert dbl_5.shape == (5,)
+        assert (dbl_5 == 2*a).all()
+
     def test_vec_slice_noncontig_inplace(self):
         a_orig = numpy.ones((10,), dtype=float)
         a = a_orig[::2]
 
         te.dbl_numpy_vec_inplace(a)
+        assert (a_orig == 2).all()
+
+        a_orig = numpy.ones((10,), dtype=float)
+        a = a_orig[::2]
+
+        te.dbl_numpy_strided_vec_inplace(a)
         assert (a_orig[::2] == 2).all()
         assert (a_orig[1::2] == 1).all()
 

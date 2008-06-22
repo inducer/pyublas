@@ -105,6 +105,21 @@ namespace
       typedef array_converter_base<VectorType> super;
 
     public:
+      static void construct_strided(
+          PyObject* obj, 
+          py::converter::rvalue_from_python_stage1_data* data)
+      {
+        typedef numpy_strided_vector<typename super::value_type> strided_vec;
+        void* storage = ((py::converter::rvalue_from_python_storage<strided_vec>*)data)->storage.bytes;
+
+        typename super::target_type vec(py::handle<>(py::borrowed(obj)));
+        new (storage) strided_vec(vec, vec.stride_slice());
+
+        // record successful construction
+        data->convertible = storage;
+      }
+
+
       static void *check(PyObject* obj)
       {
         if (!PyArray_Check(obj))
@@ -227,6 +242,24 @@ namespace
 
 
 
+  template <class Converter>
+  void register_vector_converter()
+  {
+    py::converter::registry::push_back(
+        &Converter::check
+        , &Converter::construct_strided
+        , py::type_id<numpy_strided_vector<typename Converter::value_type> >()
+#ifndef BOOST_PYTHON_NO_PY_SIGNATURES
+        , &get_PyArray_Type
+#endif
+        );
+
+    register_array_converter<Converter>();
+  }
+
+
+
+
   template <class Converter, class RealTgtType>
   void register_indirect_array_converter()
   {
@@ -301,7 +334,7 @@ namespace
     typedef matrix_converter<cm_mat> cm_mat_converter;
     typedef matrix_converter<rm_mat> rm_mat_converter;
 
-    register_array_converter<vec_converter>();
+    register_vector_converter<vec_converter>();
     register_array_converter<cm_mat_converter>();
     register_array_converter<rm_mat_converter>();
 

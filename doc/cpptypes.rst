@@ -149,8 +149,10 @@ Reference Documentation
         constructor simply by feeding it a ``boost::python::handle``.
 
         If you use the empty constructor, the vector is in an invalid
-        state until :cfunc:`numpy_vector::resize` is called. Calling any
-        other member function will result in undefined behavior.
+        state until :cfunc:`numpy_vector::resize` is called. In this state,
+        calling :cfunc:`numpy_vector::is_valid()`, :cfunc:`numpy_vector::size()`
+        and :cfunc:`numpy_vector::resize()` is allowed. Calling any other 
+        member function results in undefined behavior.
 
     .. cfunction:: size_type numpy_vector::ndim()
 
@@ -232,6 +234,94 @@ Reference Documentation
 
         A ``const`` member function.
 
+.. ctype:: numpy_strided_vector
+
+    ``template <class ValueType>``, in namespace ``pyublas``.
+
+    If you use this type as a argument type in a function called from Python,
+    the converted vector will respect non-contiguous slices automatically.
+    See :ref:`slices`
+
+    Inherits from :ctype:`boost::numeric::ublas::vector_slice`.
+
+    .. cfunction:: constructor numpy_strided_vector(const numpy_array<ValueType> &s)
+                   constructor numpy_strided_vector(const numpy_strided_vector &v)
+                   constructor numpy_strided_vector(numpy_vector<ValueType> &v, boost::numeric::ublas::slice const &s)
+
+        Observe that PyObject handles are implicitly convertible
+        to :ctype:`numpy_array`, so that you can invoke the 
+        constructor simply by feeding it a ``boost::python::handle``.
+
+    .. cfunction:: size_type numpy_strided_vector::ndim()
+
+        Return the number of dimensions of this array.
+
+        A ``const`` member function.
+        
+    .. cfunction:: const npy_intp *numpy_strided_vector::dims()
+
+        Return an array of :cfunc:`numpy_strided_vector::ndim` entries,
+        each of which is the size of the array along one dimension. 
+        in *elements*. 
+
+        A ``const`` member function.
+
+    .. cfunction:: const npy_intp *numpy_strided_vector::strides()
+
+        Return an array of :cfunc:`numpy_strided_vector::ndim` entries,
+        each of which is the stride along one dimension, in 
+        *bytes*. Divide by :cfunc:`numpy_strided_vector::itemsize` 
+        to convert this to element-wise strides.
+
+        A ``const`` member function.
+
+    .. cfunction:: npy_intp numpy_strided_vector::min_stride()
+
+        The smallest stride used in the underlying array, in bytes.
+        Divide by :cfunc:`numpy_strided_vector::itemsize` to convert this to
+        element-wise strides.
+
+        A ``const`` member function.
+
+    .. cfunction:: npy_intp numpy_strided_vector::itemsize()
+        
+        Return the size (in bytes) of each element of the array.
+
+        A ``const`` member function.
+
+    .. cfunction:: bool numpy_strided_vector::writable()
+
+        A ``const`` member function.
+
+    .. cfunction:: ValueType &numpy_strided_vector::sub(npy_intp i) 
+                   ValueType &numpy_strided_vector::sub(npy_intp i, npy_intp j) 
+                   ValueType &numpy_strided_vector::sub(npy_intp i, npy_intp j, npy_intp k) 
+                   ValueType &numpy_strided_vector::sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
+
+        Return the element at the index (i), (i,j), (i,j,k),
+        (i,j,k,l). It is up to you to ensure that the array
+        has the same number of dimensions, otherwise the results
+        are undefined.
+
+        Also available as ``const`` member functions.
+
+    .. cfunction:: boost::numeric::ublas::vector_slice<numpy_vector<ValueType> > &numpy_vector::as_ublas() 
+
+        Downcast this instance to the underlying 
+        ``boost::numeric::ublas::vector<ValueType>``.
+
+        Also available as a ``const`` member function.
+
+    .. cfunction:: boost::python::handle<> numpy_vector::to_python()
+
+        Return a Boost.Python ``handle`` (which is essentially an
+        auto-refcounting ``PyObject *``) to the underlying Numpy
+        array.  If the matrix is empty, the function may return a 
+        handle to *None*.
+
+        A ``const`` member function.
+
+
 .. ctype:: numpy_matrix
 
     ``template <class ValueType, class Orientation=boost::numeric::ublas::row_major>``, 
@@ -264,6 +354,23 @@ Reference Documentation
         return a handle to *None*.
 
         A ``const`` member function.
+
+.. ctype:: invalid_ok
+
+    ``template <class Contained>``, in namespace ``pyublas``.
+
+    *Contained* can be :ctype:`numpy_vector` or :ctype:`numpy_matrix`.
+    If arguments of this type are converted from Python, they will also accept
+    the value *None*. In that case, the resulting *Contained* will be invalid if
+    *None* is passed in. See :ref:`nullconversion`
+
+    .. cfunction:: Contained &invalid_ok::operator*()
+
+        Return a reference to the *Contained* array.
+
+    .. cfunction:: Contained *invalid_ok::operator->()
+
+        Return a pointer to the *Contained* array.
 
 Interacting with Boost.Bindings
 -------------------------------

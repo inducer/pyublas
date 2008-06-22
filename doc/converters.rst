@@ -64,6 +64,9 @@ you want anyway.
     This may also be used to conveniently construct a :ctype:`numpy_vector` from a
     known Python instance.
 
+
+.. _slices:
+
 What about slices?
 ------------------
 
@@ -125,7 +128,12 @@ cost of forcing the use of strided iterators. I believe that this
 would add an unreasonable performance penalty to the average use
 case. Therefore, this is not the default behavior.
 
-There are three ways of dealing with this situation:
+There are four ways of dealing with this situation:
+
+* Receive an argument of type :ctype:`numpy_strided_vector` instead of
+  :ctype:`numpy_vector` from Python. The smallest stride will then 
+  automatically be respected (and you will incur the strided-iterator
+  speed penalty).
 
 * By invoking the :cfunc:`numpy_vector::as_strided` member function,
   you can obtain a view of the vector that takes the numpy array's
@@ -146,8 +154,17 @@ Does :ctype:`numpy_matrix` support non-contiguous arrays?
 
 No.
 
+.. _nullconversion:
+
+Can I pass *None* for an argument that gets converted to :ctype:`numpy_vector`?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+No. But you can wrap the type in :ctype:`invalid_ok`, which enables this
+behavior. In this case, the resulting vector will be invalid. See
+:cfunc:`numpy_vector::is_valid` and :cfunc:`numpy_matrix::is_valid`
+
 Troubleshooting
 ---------------
 
-See :ref:`faq-overload-failure`.
+See :ref:`faq-overload-failure`
 

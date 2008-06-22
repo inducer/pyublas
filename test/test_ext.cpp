@@ -29,7 +29,7 @@ T doublify(T x)
 
 
 template <class T>
-void double_inplace(T x)
+void doublify_inplace(T x)
 {
   x *= 2;
 }
@@ -37,9 +37,18 @@ void double_inplace(T x)
 
 
 
-/* The following two versions prerserve shape on output: */
 template <class T>
-numpy_vector<T> doublify_numpy_vector_2(numpy_vector<T> x)
+numpy_vector<T> doublify_strided(numpy_strided_vector<T> x)
+{
+  return 2*x;
+}
+
+
+
+
+/* The following two versions preserve shape on output: */
+template <class T>
+numpy_vector<T> doublify_keep_shape_1(numpy_vector<T> x)
 {
   numpy_vector<T> result(x.ndim(), x.dims());
   result.assign(2*x.as_strided());
@@ -50,7 +59,7 @@ numpy_vector<T> doublify_numpy_vector_2(numpy_vector<T> x)
 
 
 template <class T>
-numpy_vector<T> doublify_numpy_vector_3(numpy_vector<T> x)
+numpy_vector<T> doublify_keep_shape_2(numpy_vector<T> x)
 {
   numpy_vector<T> result(2*x.as_strided());
   result.reshape(x.ndim(), x.dims());
@@ -61,9 +70,18 @@ numpy_vector<T> doublify_numpy_vector_3(numpy_vector<T> x)
 
 
 template <class T>
-void double_numpy_vector_inplace(numpy_vector<T> x)
+void doublify_numpy_vector_inplace(numpy_vector<T> x)
 {
-  x.as_strided() *= 2;
+  x *= 2;
+}
+
+
+
+
+template <class T>
+void doublify_numpy_strided_vector_inplace(numpy_strided_vector<T> x)
+{
+  x *= 2;
 }
 
 
@@ -88,18 +106,24 @@ BOOST_PYTHON_MODULE(test_ext)
   def("dbl_numpy_mat_cm", 
       doublify<numpy_matrix<double, ublas::column_major> >);
 
-  def("dbl_numpy_mat_inplace", double_inplace<numpy_matrix<double> >);
+  def("dbl_numpy_mat_inplace", doublify_inplace<numpy_matrix<double> >);
   def("dbl_numpy_mat_cm_inplace", 
-      double_inplace<numpy_matrix<double, ublas::column_major> >);
+      doublify_inplace<numpy_matrix<double, ublas::column_major> >);
 
   def("dbl_numpy_vec", 
       doublify<numpy_vector<double> >);
-  def("dbl_numpy_vec_2", 
-      doublify_numpy_vector_2<double>);
-  def("dbl_numpy_vec_3", 
-      doublify_numpy_vector_3<double>);
+  def("dbl_numpy_vec_keep_shape_1", 
+      doublify_keep_shape_1<double>);
+  def("dbl_numpy_vec_keep_shape_2", 
+      doublify_keep_shape_2<double>);
+  def("dbl_numpy_strided_vec", 
+      doublify_strided<double>);
   def("dbl_numpy_vec_inplace", 
-      double_numpy_vector_inplace<double>);
+      doublify_numpy_vector_inplace<double>);
+  def("dbl_numpy_strided_vec_inplace", 
+      doublify_numpy_strided_vector_inplace<double>);
+  def("dbl_numpy_strided_vec_inplace", 
+      doublify_numpy_strided_vector_inplace<double>);
   def("dbl_ublas_vec", 
       doublify<ublas::vector<double> >);
   def("dbl_ublas_mat", 
