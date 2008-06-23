@@ -188,7 +188,17 @@ class TestMatrices(unittest.TestCase):
         except ValueError:
             pass
 
+    def test_2d(self):
+        a = numpy.ones((10,10), dtype=float)
 
+        te.dbl_numpy_vec_inplace(a)
+        assert (a == 2).all()
+
+        a_orig = numpy.ones((10,10), dtype=float)
+        a = a_orig[::-1, ::-1]
+
+        te.dbl_numpy_vec_inplace(a)
+        assert (a_orig == 2).all()
 
 if __name__ == "__main__":
     unittest.main()

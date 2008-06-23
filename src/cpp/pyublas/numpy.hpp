@@ -306,34 +306,51 @@ namespace pyublas
 
       typedef const_pointer const_iterator;
 
-      const_iterator begin () const 
+    protected:
+
+      npy_intp max_pos_stride_index() const
+      {
+        npy_intp current_idx = -1;
+        npy_intp current_max = 0;
+        for (unsigned i = 0; i < ndim(); ++i)
+        {
+          npy_intp si = stride(i);
+          if (si > current_max)
+          {
+            current_max = si;
+            current_idx = i;
+          }
+        }
+
+        return current_idx;
+      }
+
+    public:
+      const_iterator begin() const 
       {
         const_iterator result = data();
         for (unsigned i = 0; i < ndim(); ++i)
-          if (stride(i) < 0 && dim(i))
-            result += stride(i)/sizeof(T)*(dim(i)-1);
+        {
+          const npy_intp si = stride(i)/npy_intp(sizeof(T));
+          const npy_intp di = dim(i);
+          if (si < 0 && di)
+            result += si*(di-1);
+        }
+
         return result;
       }
 
-      const_iterator end () const 
+      const_iterator end() const 
       { 
-        const_iterator result = data();
-        bool had_forward = false;
-        for (unsigned i = 0; i < ndim(); ++i)
-          if (stride(i) > 0)
-          {
-            result += stride(i)/sizeof(T)*dim(i);
-            had_forward = true;
-          }
+        const npy_intp mpsi = max_pos_stride_index();
 
-        /* If we did move forward, that pushed us past the end already.
-         * If we didn't, we're still pointing at valid territory and 
-         * need to move past that.
-         */
-        if (!had_forward)
-          result += 1;
-
-        return result;
+        if (mpsi != -1)
+        {
+          const npy_intp mps = stride(mpsi)/npy_intp(sizeof(T));
+          return data() + mps*dim(mpsi);
+        }
+        else
+          return data()+1;
       }
 
       typedef pointer iterator;
