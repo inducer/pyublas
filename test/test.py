@@ -178,6 +178,15 @@ class TestMatrices(unittest.TestCase):
         assert (a_orig[::-2] == 2).all()
         assert (a_orig[-2::-2] == 1).all()
 
+    def test_no_2d_strided_vector(self):
+        a_orig = numpy.ones((10,10), dtype=float)
+        a = a_orig[:3, :3]
+
+        try:
+            te.dbl_numpy_strided_vec_inplace(a)
+            assert False
+        except ValueError:
+            pass
 
 
 

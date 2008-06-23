@@ -118,8 +118,6 @@ Same concept, but different appearance for Fortran ordering::
            [4, 7],
            [5, 8]])
 
-.. note::
-
 What happens to non-contiguous slices?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -153,9 +151,9 @@ arise here. You're welcome to take a look.
 
 .. warning::
 
-    Ublas only provides single-dimensional strides. 
+    Ublas, the C++ side of PyUblas, only provides single-dimensional strides. 
     Multi-dimensional :mod:`numpy` slices (such as ``zeros((5,5))[:3,:3]``)
-    can easily become too complex to be represented using these slices.
+    can easily become too complex to be represented using 1D slices.
     In this case, the first two ways mentioned above will fail with a 
     :exc:`ValueError`.
 
