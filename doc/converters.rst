@@ -118,6 +118,10 @@ Same concept, but different appearance for Fortran ordering::
            [4, 7],
            [5, 8]])
 
+.. note::
+
+  Negative strides are supported as of PyUblas 0.93.
+
 What happens to non-contiguous slices?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

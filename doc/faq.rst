@@ -44,3 +44,25 @@ Common reasons include:
   when creating a 2D array.
 
 The function :func:`pyublas.why_not` can help you debug these cases.
+
+User-visible Changes
+====================
+
+PyUblas 0.93
+------------
+
+* Negative strides are supported. Slice handling was cleaned up and should be 
+  correct now.
+
+* :class:`invalid_ok` was added.
+
+* :class:`numpy_strided_vector` was added as another way of transparently dealing
+  with non-contiguous slices.
+
+* :cfunc:`numpy_vector::min_stride` is gone. It was ill-specified and not capable
+  of doing what it promised to do.
+
+* :mod:`numpy` forces every C/C++ module that uses its functionality to call
+  :cfunc:`import_array`. PyUblas has a clever mechanism that does this for you.
+  This mechanism was not correct previously, it would often fail when a 
+  particular piece of code was not inlined.
