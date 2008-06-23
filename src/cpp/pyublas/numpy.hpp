@@ -19,6 +19,7 @@
 
 
 
+#include <cstdlib>
 #include <numeric>
 #include <complex>
 #include <pyublas/python_helpers.hpp>
@@ -214,7 +215,9 @@ namespace pyublas
           return 0;
 
         if (ndim() != 0)
-          return min_stride()/sizeof(T)*size_from_dims(ndim(), dims());
+        {
+          return end()-begin();
+        }
         else
           return 1;
       }
@@ -226,15 +229,13 @@ namespace pyublas
       { return PyArray_NDIM(m_numpy_array.get()); }
       const npy_intp *dims() const 
       { return PyArray_DIMS(m_numpy_array.get()); }
+      const npy_intp dim(npy_intp i) const 
+      { return PyArray_DIM(m_numpy_array.get(), i); }
       const npy_intp *strides() const 
       { return PyArray_STRIDES(m_numpy_array.get()); }
-      npy_intp min_stride() const
-      {
-        if (ndim() == 0)
-          return itemsize();
-        else
-          return *std::min_element(strides(), strides()+ndim());
-      }
+      const npy_intp stride(npy_intp i) const 
+      { return PyArray_STRIDE(m_numpy_array.get(), i); }
+
       npy_intp itemsize() const
       { return sizeof(T); }
       bool writable() const
@@ -267,13 +268,13 @@ namespace pyublas
       const_reference operator [] (size_type i) const 
       {
         BOOST_UBLAS_CHECK(i < size(), boost::numeric::ublas::bad_index());
-        return data()[i];
+        return begin()[i];
       }
 
       reference operator [] (size_type i) 
       {
         BOOST_UBLAS_CHECK(i < size(), boost::numeric::ublas::bad_index());
-        return data()[i];
+        return begin()[i];
       }
 
       // Assignment
@@ -307,24 +308,46 @@ namespace pyublas
 
       const_iterator begin () const 
       {
-        return data();
+        const_iterator result = data();
+        for (unsigned i = 0; i < ndim(); ++i)
+          if (stride(i) < 0 && dim(i))
+            result += stride(i)/sizeof(T)*(dim(i)-1);
+        return result;
       }
 
       const_iterator end () const 
-      {
-        return data() + size();
+      { 
+        const_iterator result = data();
+        bool had_forward = false;
+        for (unsigned i = 0; i < ndim(); ++i)
+          if (stride(i) > 0)
+          {
+            result += stride(i)/sizeof(T)*dim(i);
+            had_forward = true;
+          }
+
+        /* If we did move forward, that pushed us past the end already.
+         * If we didn't, we're still pointing at valid territory and 
+         * need to move past that.
+         */
+        if (!had_forward)
+          result += 1;
+
+        return result;
       }
 
       typedef pointer iterator;
 
-      iterator begin () 
+      iterator begin() 
       {
-        return data();
+        return const_cast<iterator>(
+            const_cast<numpy_array const *>(this)->begin());
       }
 
-      iterator end () 
-      {
-        return data() + size();
+      iterator end() 
+      { 
+        return const_cast<iterator>(
+            const_cast<numpy_array const *>(this)->end());
       }
 
       // Reverse iterators
@@ -459,10 +482,12 @@ namespace pyublas
       { return static_cast<const Derived *>(this)->array().ndim(); }
       const npy_intp *dims() const 
       { return static_cast<const Derived *>(this)->array().dims(); }
+      const npy_intp dim(npy_intp i) const 
+      { return static_cast<const Derived *>(this)->array().dim(i); }
       const npy_intp *strides() const 
       { return static_cast<const Derived *>(this)->array().strides(); }
-      npy_intp min_stride() const
-      { return static_cast<const Derived *>(this)->array().min_stride(); }
+      const npy_intp stride(npy_intp i) const 
+      { return static_cast<const Derived *>(this)->array().stride(i); }
       npy_intp itemsize() const
       { return sizeof(typename Derived::value_type); }
       bool writable() const 
@@ -608,8 +633,25 @@ namespace pyublas
 
       boost::numeric::ublas::slice stride_slice() const
       {
-        npy_intp ms = func::min_stride()/sizeof(T);
-        return boost::numeric::ublas::slice(0, ms, this->size()/ms);
+        if (this->ndim() == 1)
+        {
+          npy_intp stride = this->stride(0)/npy_intp(sizeof(T));
+          typename super::size_type sz = this->size();
+
+          if (stride < 0)
+          {
+            return boost::numeric::ublas::slice(
+                sz-1, stride, this->dim(0));
+          }
+          else
+            return boost::numeric::ublas::slice(0, stride, this->dim(0));
+        }
+        else if (this->ndim() == 0)
+          return boost::numeric::ublas::slice(0, 1, 1);
+        else
+          PYUBLAS_PYERROR(ValueError, 
+              "cannot generate a stride-respecting 1D slice "
+              "for 2D or higher arrays");
       }
 
       numpy_strided_vector<T> as_strided()
@@ -620,8 +662,8 @@ namespace pyublas
       boost::numeric::ublas::vector_slice<const numpy_vector>
         as_strided() const
       {
-        npy_intp ms = func::min_stride()/sizeof(T);
-        return subslice(*this, 0, ms, this->size()/ms);
+        return boost::numeric::ublas::vector_slice<const numpy_vector>
+          (*this, stride_slice());
       }
 
       numpy_array<T> &array()
@@ -704,6 +746,12 @@ namespace pyublas
 
       numpy_array<T> const &array() const
       { return this->m_vector.data(); }
+
+      typename super::size_type stride() const
+      { return super::stride(); }
+
+      npy_intp stride(npy_intp i) const
+      { return this->m_vector.stride(i); }
   };
 
 

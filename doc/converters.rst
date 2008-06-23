@@ -118,6 +118,8 @@ Same concept, but different appearance for Fortran ordering::
            [4, 7],
            [5, 8]])
 
+.. note::
+
 What happens to non-contiguous slices?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -148,6 +150,14 @@ There are four ways of dealing with this situation:
 
 The PyUblas test suite explores many of these corner cases that
 arise here. You're welcome to take a look.
+
+.. warning::
+
+    Ublas only provides single-dimensional strides. 
+    Multi-dimensional :mod:`numpy` slices (such as ``zeros((5,5))[:3,:3]``)
+    can easily become too complex to be represented using these slices.
+    In this case, the first two ways mentioned above will fail with a 
+    :exc:`ValueError`.
 
 Does :ctype:`numpy_matrix` support non-contiguous arrays?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

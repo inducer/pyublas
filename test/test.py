@@ -163,6 +163,22 @@ class TestMatrices(unittest.TestCase):
         v = te.make_resized_vector(5)
         assert v.shape == (5,)
 
+    def test_negative_stride(self):
+        a_orig = numpy.ones((10,), dtype=float)
+        a = a_orig[::-2]
+
+        te.dbl_numpy_vec_inplace(a)
+        assert (a_orig[1:] == 2).all()
+        assert (a_orig[0] == 1).all()
+
+        a_orig = numpy.ones((10,), dtype=float)
+        a = a_orig[::-2]
+
+        te.dbl_numpy_strided_vec_inplace(a)
+        assert (a_orig[::-2] == 2).all()
+        assert (a_orig[-2::-2] == 1).all()
+
+
 
 
 if __name__ == "__main__":

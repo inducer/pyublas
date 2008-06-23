@@ -47,11 +47,12 @@ to :ctype:`numpy_matrix` as well.)
 
   The `assign` method does not resize its target to the size of its operand--this is something you have to do by hand if you use the above recipe.
 
-You should be aware of another, small difference: Because :ctype:`numpy_vector` keeps
-its data reference inside a Numpy array object, indexed access is a good deal
-slower than iterator access. Iterators achieve the same speed as "regular"
-Ublas, while indexed access adds an extra level of pointer lookup. As is true
-of much of the rest of C++: *Use iterators whenever possible.*
+You should be aware of another difference: Indexed access to
+:ctype:`numpy_vector` is a much slower than iterator access. Iterators achieve
+the same speed as "regular" Ublas, while indexed access adds some extra
+instructions to find the real start of the array in the presence of negative
+slices. As is true of much of the rest of C++: *Use iterators whenever
+possible.*
 
 Reference Documentation
 -----------------------
@@ -96,10 +97,6 @@ Reference Documentation
         A ``const`` member function.
 
     .. cfunction:: const npy_intp *numpy_array::strides()
-
-        A ``const`` member function.
-
-    .. cfunction:: npy_intp numpy_array::min_stride()
 
         A ``const`` member function.
 
@@ -243,6 +240,13 @@ Reference Documentation
     See :ref:`slices`
 
     Inherits from :ctype:`boost::numeric::ublas::vector_slice`.
+
+    .. warning::
+
+        Ublas only provides single-dimensional strides. 
+        Multi-dimensional :mod:`numpy` slices (such as ``zeros((5,5))[:3,:3]``)
+        can easily become too complex to be represented using these slices.
+        In this case, the from-Python conversion fails with a :exc:`ValueError`.
 
     .. cfunction:: constructor numpy_strided_vector(const numpy_array<ValueType> &s)
                    constructor numpy_strided_vector(const numpy_strided_vector &v)
