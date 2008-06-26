@@ -2,17 +2,7 @@ import pyublas
 import numpy
 import unittest
 
-try:
-    import test_ext as te
-except ImportError:
-    print "------------------------------------------------"
-    print "You need to compile the test extension."
-    print "Run ./build_ext.py to do so."
-    print "I'll try doing this for you, but no guarantees:"
-    print "------------------------------------------------"
-    from build_ext import build_ext
-    build_ext()
-    import test_ext as te
+import pyublas.test_ext as te
 
 
 
@@ -199,6 +189,3 @@ class TestMatrices(unittest.TestCase):
 
         te.dbl_numpy_vec_inplace(a)
         assert (a_orig == 2).all()
-
-if __name__ == "__main__":
-    unittest.main()
