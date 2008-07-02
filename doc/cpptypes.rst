@@ -59,6 +59,8 @@ slices. As is true of much of the rest of C++:
 
   Use iterators whenever possible.
 
+Also see :ref:`speed-faq`
+
 Reference Documentation
 -----------------------
 

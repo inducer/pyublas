@@ -45,6 +45,8 @@ Common reasons include:
 
 The function :func:`pyublas.why_not` can help you debug these cases.
 
+.. _speed-faq:
+
 Gaah! Why is this garbage so slow?
 ----------------------------------
 
@@ -79,6 +81,11 @@ are pretty much as promised::
     test_ublas_speed: 0.031008s
     test_unstrided_speed: 0.034083s
     test_strided_speed: 0.205794s
+
+If you configure PyUblas with :option:`--use-iterators`, it will
+define :cmacro:`BOOST_UBLAS_USE_ITERATING` while it is being compiled.
+Note however that you still need to define this macro when compiling
+your own code.
 
 .. note:: 
 
