@@ -93,6 +93,12 @@ your own code.
     :cmacro:`BOOST_UBLAS_USE_ITERATING` is defined. I have submitted
     a patch to the Ublas folks to fix this.
  
+The final question is, then, why ``test_strided_speed`` is still about
+an order of magnitude slower than the other two. The answer is that
+Ublas will always use indexing access in
+:ctype:`boost::numeric::vector_slice`, from which
+:ctype:`numpy_strided_vector` is derived.
+
 User-visible Changes
 ====================
 
