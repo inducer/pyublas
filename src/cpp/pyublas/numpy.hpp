@@ -751,6 +751,12 @@ namespace pyublas
         : vector_holder(v), super(this->m_vector, s)
       { }
 
+      template<class AE>
+      numpy_strided_vector(const boost::numeric::ublas::vector_expression<AE> &ae)
+      : vector_holder(ae),
+      super(this->m_vector, boost::numeric::ublas::slice(0, 1, ae().size()))
+      { }
+
       // as-ublas accessor
       super &as_ublas() 
       { return *this; }
