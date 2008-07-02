@@ -45,6 +45,47 @@ Common reasons include:
 
 The function :func:`pyublas.why_not` can help you debug these cases.
 
+Gaah! Why is this garbage so slow?
+----------------------------------
+
+Ok, let's substantiate this discussion somehwat. I've obtained
+the following numbers using :file:`test/strided_speed.py` on my
+1.7GHz Pentium M. You can run that file yourself for comparison.
+
+PyUblas with Boost.Ublas in its default configuration obtains the
+following speeds::
+
+    test_ublas_speed: 0.023819s
+    test_unstrided_speed: 0.152608s
+    test_strided_speed: 0.234522s
+
+All these tests measure a certain number of large in-place
+vector-scalar multiplications. The assumption is that performance
+for most other vector-vector operations will be very similar.
+
+``test_ublas_speed`` measures the performance of that operation for
+:ctype:`boost::numeric::ublas::vector`, ``test_unstrided_speed`` for
+:ctype:`numpy_vector`, and ``test_strided_speed`` for 
+:ctype:`numpy_strided_vector`. Now, you'll say, that's scary, because, 
+unlike what's promised :ref:`here <indexing-speed>`, the unstrided
+:ctype:`numpy_vector` actually is about an order of magnitude slower
+than native Ublas. This is due to the fact that Ublas uses indexed
+access for dense vector/matrix operations by default.
+
+This default can be changed, however, by defining
+:cmacro:`BOOST_UBLAS_USE_ITERATING`, in which case the timings
+are pretty much as promised::
+
+    test_ublas_speed: 0.031008s
+    test_unstrided_speed: 0.034083s
+    test_strided_speed: 0.205794s
+
+.. note:: 
+
+    Unfortunately, Boost 1.35 shipped with code that breaks when
+    :cmacro:`BOOST_UBLAS_USE_ITERATING` is defined. I have submitted
+    a patch to the Ublas folks to fix this.
+ 
 User-visible Changes
 ====================
 

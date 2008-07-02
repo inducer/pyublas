@@ -15,6 +15,7 @@ def get_config_schema():
         Libraries("BOOST_PYTHON", ["boost_python-gcc42-mt"]),
 
         Switch("WITH_SPARSE_WRAPPERS", False, "Whether to build sparse wrappers"),
+        Switch("USE_ITERATORS", False, "Whether to use iterators (faster, requires new Boost)"),
 
         StringListOption("CXXFLAGS", ["-Wno-sign-compare"], 
             help="Any extra C++ compiler options to include"),
@@ -37,7 +38,10 @@ def main():
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
 
-    EXTRA_DEFINES = {}
+    EXTRA_DEFINES = { }
+
+    if conf["USE_ITERATORS"]:
+        EXTRA_DEFINES["BOOST_UBLAS_USE_ITERATING"] = 1
 
     ext_src = [
             "src/wrapper/main.cpp",

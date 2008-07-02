@@ -47,12 +47,17 @@ to :ctype:`numpy_matrix` as well.)
 
   The `assign` method does not resize its target to the size of its operand--this is something you have to do by hand if you use the above recipe.
 
+.. _indexing-speed:
+
 You should be aware of another difference: Indexed access to
-:ctype:`numpy_vector` is a much slower than iterator access. Iterators achieve
+:ctype:`numpy_vector` is much slower than iterator access. Iterators achieve
 the same speed as "regular" Ublas, while indexed access adds some extra
 instructions to find the real start of the array in the presence of negative
-slices. As is true of much of the rest of C++: *Use iterators whenever
-possible.*
+slices. As is true of much of the rest of C++: 
+
+.. tip:: 
+
+  Use iterators whenever possible.
 
 Reference Documentation
 -----------------------

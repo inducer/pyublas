@@ -97,6 +97,39 @@ numpy_vector<double> make_resized_vector(unsigned n)
 
 
 
+void test_ublas_speed()
+{
+  ublas::vector<double> x(ublas::scalar_vector<double>(100000, 1));
+
+  for (unsigned i = 0; i < 100; ++i)
+    x *= 2;
+}
+
+
+
+
+void test_unstrided_speed()
+{
+  numpy_vector<double> x(ublas::scalar_vector<double>(100000, 1));
+
+  for (unsigned i = 0; i < 100; ++i)
+    x *= 2;
+}
+
+
+
+
+void test_strided_speed()
+{
+  numpy_strided_vector<double> x(ublas::scalar_vector<double>(100000, 1));
+
+  for (unsigned i = 0; i < 100; ++i)
+    x *= 2;
+}
+
+
+
+
 BOOST_PYTHON_MODULE(test_ext)
 {
   def("dbl_int", doublify<int>);
@@ -130,4 +163,8 @@ BOOST_PYTHON_MODULE(test_ext)
       doublify<ublas::matrix<double> >);
 
   def("make_resized_vector", make_resized_vector);
+
+  def("test_ublas_speed", test_ublas_speed);
+  def("test_unstrided_speed", test_unstrided_speed);
+  def("test_strided_speed", test_strided_speed);
 }
