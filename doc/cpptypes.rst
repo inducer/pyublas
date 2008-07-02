@@ -258,6 +258,7 @@ Reference Documentation
     .. cfunction:: constructor numpy_strided_vector(const numpy_array<ValueType> &s)
                    constructor numpy_strided_vector(const numpy_strided_vector &v)
                    constructor numpy_strided_vector(numpy_vector<ValueType> &v, boost::numeric::ublas::slice const &s)
+                   constructor numpy_strided_vector(const boost::numeric::ublas::vector_expression<AE> &ae)
 
         Observe that PyObject handles are implicitly convertible
         to :ctype:`numpy_array`, so that you can invoke the 
