@@ -32,3 +32,10 @@ configure, and it will automatically update these files for you.
 
 This is particularly handy if you want to perform an unattended or automatic
 installation via easy_install.
+
+---
+
+MSVC users can build using boost bjam. Unpack boost in a parallel directory
+to pyublas and then run bjam in the pyubls directory. A subdirectory named
+"pyublas" will be created with the files required for the Python extension
+module.
