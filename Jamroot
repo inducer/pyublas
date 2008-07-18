@@ -1,0 +1,3 @@
+project root ;
+import python ;
+use-project /boost/python : ../boost/libs/python/build ;

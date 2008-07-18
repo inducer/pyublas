@@ -13,6 +13,10 @@
 
 
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4018 ) // signed/unsigned mismatch
+#endif
 
 #include <complex>
 #include <string>
@@ -629,29 +633,47 @@ struct conjugateWrapper
 };
 
 
+template<typename MatrixType>
+struct add_element_inplace_helper
+{
+  typedef typename MatrixType::size_type size_type;
+  typedef typename MatrixType::value_type value_type;
+
+  void operator()(MatrixType &mat, 
+    size_type i,
+    size_type j,
+    value_type x)
+  {
+    mat(i,j) += x;
+  }
+};
+
+template<typename V>
+struct add_element_inplace_helper<ublas::coordinate_matrix<V, ublas::column_major> >
+{
+  typedef unsigned int size_type;
+  typedef V value_type;
+
+  void operator()(ublas::coordinate_matrix<V, ublas::column_major> &mat, 
+    size_type i,
+    size_type j,
+    value_type x)
+  {
+    mat.append_element(i, j, x);
+  }
+};
+
+
 
 
 template <typename MatrixType>
 inline
 void add_element_inplace(MatrixType &mat, 
-    typename MatrixType::size_type i,
-    typename MatrixType::size_type j,
-    typename MatrixType::value_type x)
+    typename add_element_inplace_helper<MatrixType>::size_type i,
+    typename add_element_inplace_helper<MatrixType>::size_type j,
+    typename add_element_inplace_helper<MatrixType>::value_type x)
 {
-  mat(i,j) += x;
-}
-
-
-
-
-template <typename V>
-inline
-void add_element_inplace(ublas::coordinate_matrix<V, ublas::column_major> &mat, 
-    unsigned i,
-    unsigned j,
-    V x)
-{
-  mat.append_element(i, j, x);
+  add_element_inplace_helper<MatrixType>()(mat, i, j, x);
 }
 
 
@@ -1189,6 +1211,12 @@ void expose_matrix_type(WrappedClass, const std::string &python_typename, const 
 
 
 } // private namespace
+
+
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 
 // EMACS-FORMAT-TAG

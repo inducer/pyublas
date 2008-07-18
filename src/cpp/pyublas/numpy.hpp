@@ -19,6 +19,11 @@
 
 
 
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4355 ) // 'this' : used in initializer list
+#endif
+
 #include <cstdlib>
 #include <numeric>
 #include <complex>
@@ -570,7 +575,7 @@ namespace pyublas
       // shape manipulation 
       void reshape(int ndim_, const npy_intp *dims_, NPY_ORDER order=NPY_CORDER)
       {
-        static_cast<const Derived *>(this)->data().reshape(ndim_, dims_, order);
+        static_cast<Derived *>(this)->data().reshape(ndim_, dims_, order);
       }
 
       boost::python::handle<> to_python() const
@@ -985,5 +990,9 @@ namespace boost { namespace numeric { namespace bindings { namespace traits {
 #endif
 
 
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 #endif
