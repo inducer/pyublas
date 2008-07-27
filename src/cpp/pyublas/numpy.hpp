@@ -27,6 +27,9 @@
 #include <boost/numeric/ublas/vector_proxy.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/storage.hpp>
+#include <boost/type_traits/is_integral.hpp>
+#include <boost/type_traits/is_signed.hpp>
+#include <boost/python.hpp>
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <numpy/arrayobject.h>
@@ -76,6 +79,26 @@ namespace pyublas
   inline NPY_TYPES get_typenum(boost::python::object) { return NPY_OBJECT; }
   inline NPY_TYPES get_typenum(boost::python::handle<>) { return NPY_OBJECT; }
   /* NPY_STRING, NPY_UNICODE unsupported for now */
+
+  template <class T>
+  inline
+  bool is_storage_compatible(PyObject *ary)
+  {
+    /* This piece of code works around the fact that 'int' and 
+     * 'long int' are the same on 32-bit machines, which can lead
+     * to typenum mismatches. Therefore, for integers, we only
+     * compare size and signedness.
+     */
+
+    if (boost::is_integral<T>::value && PyArray_ISINTEGER(ary))
+    {
+      return (sizeof(T) == PyArray_ITEMSIZE(ary)
+          && bool(boost::is_signed<T>::value) 
+          == bool(PyArray_ISSIGNED(ary)));
+    }
+    else
+      return PyArray_TYPE(ary) == get_typenum(T());
+  }
 
 
 
@@ -159,7 +182,7 @@ namespace pyublas
 
         if (!PyArray_Check(obj.get()))
           PYUBLAS_PYERROR(TypeError, "argument is not a numpy array");
-        if (PyArray_TYPE(obj.get()) != get_typenum(T()))
+        if (!is_storage_compatible<T>(obj.get()))
           PYUBLAS_PYERROR(TypeError, "argument is numpy array of wrong type");
         if (!PyArray_CHKFLAGS(obj.get(), NPY_ALIGNED))
             PYUBLAS_PYERROR(ValueError, "argument array is not aligned");

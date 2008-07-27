@@ -124,7 +124,8 @@ namespace
       {
         if (!PyArray_Check(obj))
           return 0;
-        if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
+
+        if (!is_storage_compatible<typename super::value_type>(obj))
           return 0;
 
         return obj;
@@ -171,7 +172,7 @@ namespace
       {
         if (!PyArray_Check(obj))
           return 0;
-        if (PyArray_TYPE(obj) != get_typenum(typename super::value_type()))
+        if (!is_storage_compatible<typename super::value_type>(obj))
           return 0;
         if (PyArray_NDIM(obj) != 2)
           return 0;
