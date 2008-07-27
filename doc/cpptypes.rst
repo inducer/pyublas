@@ -181,14 +181,6 @@ Reference Documentation
 
         A ``const`` member function.
 
-    .. cfunction:: npy_intp numpy_vector::min_stride()
-
-        The smallest stride used in the underlying array, in bytes.
-        Divide by :cfunc:`numpy_vector::itemsize` to convert this to
-        element-wise strides.
-
-        A ``const`` member function.
-
     .. cfunction:: npy_intp numpy_vector::itemsize()
         
         Return the size (in bytes) of each element of the array.
