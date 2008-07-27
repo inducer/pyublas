@@ -90,8 +90,9 @@ your own code.
 .. note:: 
 
     Unfortunately, Boost 1.35 shipped with code that breaks when
-    :cmacro:`BOOST_UBLAS_USE_ITERATING` is defined. I have submitted
-    a patch to the Ublas folks to fix this.
+    :cmacro:`BOOST_UBLAS_USE_ITERATING` is defined. I have submitted a `patch
+    <http://lists.boost.org/MailArchives/ublas/2008/07/2872.php>`_ to the Ublas
+    folks to fix this.
  
 The final question is, then, why ``test_strided_speed`` is still about
 an order of magnitude slower than the other two. The answer is that
@@ -120,3 +121,32 @@ PyUblas 0.93
   :cfunc:`import_array`. PyUblas has a clever mechanism that does this for you.
   This mechanism was not correct previously, it would often fail when a 
   particular piece of code was not inlined.
+
+Licensing
+=========
+
+PyUblas is licensed to you under the MIT/X Consortium license:
+
+Copyright (c) 2008 Andreas Klöckner
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
