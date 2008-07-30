@@ -95,13 +95,29 @@ numpy_vector<double> make_resized_vector(unsigned n)
 }
 
 
+#include <boost/range.hpp>
+//#include <iostream>
+template<typename vec_t>
+void D (vec_t & v) {
+  typename boost::range_iterator<vec_t>::type i = boost::begin (v);
+  typename boost::range_iterator<vec_t>::type e = boost::end (v);
+  for (; i != e; ++i)
+    *i *= 2;
+}
 
+template<typename vec_t>
+void test_speed() {
+  vec_t x (ublas::scalar_vector<double> (100000, 1));
+  //  std::cout << &(*boost::begin (x)) << ' ' << &(*boost::end (x)) << '\n';
+  for (unsigned i = 0; i < 1000; ++i)
+    D (x);
+}
 
 void test_ublas_speed()
 {
   ublas::vector<double> x(ublas::scalar_vector<double>(100000, 1));
 
-  for (unsigned i = 0; i < 100; ++i)
+  for (unsigned i = 0; i < 1000; ++i)
     x *= 2;
 }
 
@@ -112,7 +128,7 @@ void test_unstrided_speed()
 {
   numpy_vector<double> x(ublas::scalar_vector<double>(100000, 1));
 
-  for (unsigned i = 0; i < 100; ++i)
+  for (unsigned i = 0; i < 1000; ++i)
     x *= 2;
 }
 
@@ -123,7 +139,7 @@ void test_strided_speed()
 {
   numpy_strided_vector<double> x(ublas::scalar_vector<double>(100000, 1));
 
-  for (unsigned i = 0; i < 100; ++i)
+  for (unsigned i = 0; i < 1000; ++i)
     x *= 2;
 }
 
@@ -167,4 +183,8 @@ BOOST_PYTHON_MODULE(test_ext)
   def("test_ublas_speed", test_ublas_speed);
   def("test_unstrided_speed", test_unstrided_speed);
   def("test_strided_speed", test_strided_speed);
+
+  def("test_ublas_speed2", test_speed<ublas::vector<double> >);
+  def("test_unstrided_speed2", test_speed<numpy_vector<double> >);
+  def("test_strided_speed2", test_speed<numpy_strided_vector<double> >);
 }
