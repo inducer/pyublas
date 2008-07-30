@@ -10,3 +10,7 @@ import pyublas.test_ext as t
 print_extime(t.test_ublas_speed)
 print_extime(t.test_unstrided_speed)
 print_extime(t.test_strided_speed)
+
+print_extime(t.test_ublas_speed2)
+print_extime(t.test_unstrided_speed2)
+print_extime(t.test_strided_speed2)
