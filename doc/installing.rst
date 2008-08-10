@@ -91,17 +91,28 @@ it::
 
 (If you're not sure, repeating these commands will not hurt.)
 
-Step 4: Build PyUblas
+Step 4: Create and Customize a Configuration File
+-------------------------------------------------
+
+Copy and paste the following text into a file called
+:file:`.aksetup-defaults.py` (Make sure not to miss
+the initial dot, it's important.) in your home directory::
+
+    BOOST_BINDINGS_INC_DIR = ['/home/andreas/pool/include/boost-bindings']
+    BOOST_INC_DIR = ['/home/andreas/pool/include/boost-1_35']
+    BOOST_LIB_DIR = ['/home/andreas/pool/lib']
+    BOOST_PYTHON_LIBNAME = ['boost_python-gcc42-mt']
+
+You will need to adapt the path names in this file to your personal
+situation, of course.
+
+Step 5: Build PyUblas
 ---------------------
 
 Just type::
 
     $ cd PyUblas-VERSION # if you're not there already
-    $ ./configure \
-      --boost-inc-dir=$HOME/pool/include/boost-1_35 \
-      --boost-lib-dir=$HOME/pool/lib \
-      --boost-python-libname=boost_python-gcc42-mt
-    $ su -c "make install"
+    $ sudo python setup.py install
 
 Note that ``gcc42`` is a compiler tag that depends on the compiler
 with which you built boost. Check the contents of your boost 
@@ -109,7 +120,7 @@ library directory to find out what the correct tag is.
 
 Once that works, congratulations! You've successfully built PyUblas.
 
-Step 5: Test PyUblas
+Step 6: Test PyUblas
 --------------------
 
 If you'd like to be extra-careful, you can run PyUblas's unit tests::
