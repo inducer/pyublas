@@ -122,6 +122,19 @@ PyUblas 0.93
   This mechanism was not correct previously, it would often fail when a 
   particular piece of code was not inlined.
 
+Acknowledgements
+================
+
+PyUblas lives through contributions from users like you! The following
+people have been kind enough to contribute their changes back to PyUblas:
+
+* Neal Becker provided lots of feedback and a good bit of code.
+* Bryan Silverthorn added :ctype:`strided_vector` to-Python conversion.
+* Joshua Napoli made PyUblas compatible with MSVC and made PyUblas buildable
+  with Boost.Build.
+
+Thanks to all of you! (Any omission here? If so, please let me know.)
+
 Licensing
 =========
 

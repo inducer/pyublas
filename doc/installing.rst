@@ -6,7 +6,8 @@ Installation
 This tutorial will walk you through the process of building PyUblas. To follow,
 you really only need three basic things:
 
-* A UNIX-like machine with web access.
+* A UNIX-like machine with web access. (Running Windows? See
+  :ref:`boost-build-install`.)
 * A C++ compiler, preferably a Version 4.x gcc.
 * A working `Python <http://www.python.org>`_ installation, Version 2.4 or newer.
 
@@ -129,3 +130,12 @@ If you'd like to be extra-careful, you can run PyUblas's unit tests::
     $ python test.py
 
 If it says "OK" at the end, you're golden.
+
+.. _boost-build-install:
+Alternate Installation: Use Boost.Build
+=======================================
+
+MSVC users can build PyUblas using boost bjam. Unpack Boost in a parallel
+directory to pyublas and then run bjam in the :file:`pyublas` directory. A
+subdirectory named "pyublas" will be created with the files required for the
+Python extension module.
