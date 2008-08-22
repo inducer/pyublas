@@ -9,7 +9,7 @@ import pyublas.test_ext as te
 
 
 class TestMatrices(unittest.TestCase):
-    def etest_array_scalars(self):
+    def test_array_scalars(self):
         u = numpy.int32(5)
         assert te.dbl_int(u) == 10
 

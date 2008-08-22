@@ -1,0 +1,55 @@
+import toolset : flags ;
+import feature ;
+
+project PyUblas
+  : requirements
+    <include>src/cpp
+    <include>/python25/Lib/site-packages/numpy/core/include
+    <threading>multi
+  : usage-requirements
+    <include>src/cpp
+    <include>/python25/Lib/site-packages/numpy/core/include
+  ;
+  
+python-extension _internal
+  : # sources
+    [ glob src/wrapper/*.cpp ]
+    /boost/python//boost_python
+  ;
+
+python-extension test_ext
+  : # sources
+    [ glob src/test/*.cpp ]
+    /boost/python//boost_python
+  ;
+    
+install pyublas 
+  : # sources
+    [ glob src/python/*.py ]
+    _internal
+    test_ext
+  : # requirements
+    <install-dependencies>on
+    <install-type>LIB
+    <install-type>PY
+    ;
+
+feature.feature testdriver : : free optional path ;
+
+make test
+  : # sources
+    test/test.py
+    pyublas
+  : # generating-rule
+    @test_action
+  : # requirements
+    <testdriver>test/test.py
+  ;
+
+flags test_action PYTHON : <python.interpreter> ;
+flags test_action TESTDRIVER : <testdriver> ;
+actions test_action
+{
+  set PYTHONPATH=.
+  $(PYTHON) $(TESTDRIVER)
+}
