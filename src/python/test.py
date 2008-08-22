@@ -64,6 +64,11 @@ class TestMatrices(unittest.TestCase):
         assert dbl_5.shape == (5,)
         assert (dbl_5 == 2*a).all()
 
+        # returned strided vector should behave the same
+        dbl_6 = te.dbl_numpy_strided_vec_ret(a)
+        assert dbl_6.shape == (5,)
+        assert (dbl_6 == 2*a).all()
+
     def test_vec_slice_noncontig_inplace(self):
         a_orig = numpy.ones((10,), dtype=float)
         a = a_orig[::2]

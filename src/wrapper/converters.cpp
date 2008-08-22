@@ -349,6 +349,10 @@ namespace
       <rm_mat_converter, ublas::matrix<T, ublas::row_major> >();
     register_indirect_array_converter
       <cm_mat_converter, ublas::matrix<T, ublas::column_major> >();
+
+    py::to_python_converter<
+        numpy_strided_vector<T>,
+        typename vector_converter<numpy_strided_vector<T> >::to_python>();
   }
 }
 

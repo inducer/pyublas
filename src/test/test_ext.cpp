@@ -43,6 +43,12 @@ numpy_vector<T> doublify_strided(numpy_strided_vector<T> x)
   return 2*x;
 }
 
+template <class T>
+numpy_strided_vector<T> doublify_strided_returned(numpy_strided_vector<T> x)
+{
+  return 2*x;
+}
+
 
 
 
@@ -151,6 +157,8 @@ BOOST_PYTHON_MODULE(test_ext)
       doublify_keep_shape_2<double>);
   def("dbl_numpy_strided_vec", 
       doublify_strided<double>);
+  def("dbl_numpy_strided_vec_ret", 
+      doublify_strided_returned<double>);
   def("dbl_numpy_vec_inplace", 
       doublify_numpy_vector_inplace<double>);
   def("dbl_numpy_strided_vec_inplace", 
