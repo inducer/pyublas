@@ -132,8 +132,9 @@ If you'd like to be extra-careful, you can run PyUblas's unit tests::
 If it says "OK" at the end, you're golden.
 
 .. _boost-build-install:
-Alternate Installation: Use Boost.Build
-=======================================
+
+Alternate Installation using Boost.Build
+========================================
 
 MSVC users can build PyUblas using boost bjam. Unpack Boost in a parallel
 directory to pyublas and then run bjam in the :file:`pyublas` directory. A
