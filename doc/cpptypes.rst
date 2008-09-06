@@ -55,7 +55,7 @@ the same speed as "regular" Ublas, while indexed access adds some extra
 instructions to find the real start of the array in the presence of negative
 slices. As is true of much of the rest of C++: 
 
-.. tip:: 
+.. note:: 
 
   Use iterators whenever possible.
 

@@ -9,7 +9,7 @@ import pyublas.test_ext as te
 
 
 class TestMatrices(unittest.TestCase):
-    def etest_array_scalars(self):
+    def test_array_scalars(self):
         u = numpy.int32(5)
         assert te.dbl_int(u) == 10
 
@@ -63,6 +63,11 @@ class TestMatrices(unittest.TestCase):
         dbl_5 = te.dbl_numpy_strided_vec(a)
         assert dbl_5.shape == (5,)
         assert (dbl_5 == 2*a).all()
+
+        # returned strided vector should behave the same
+        dbl_6 = te.dbl_numpy_strided_vec_ret(a)
+        assert dbl_6.shape == (5,)
+        assert (dbl_6 == 2*a).all()
 
     def test_vec_slice_noncontig_inplace(self):
         a_orig = numpy.ones((10,), dtype=float)

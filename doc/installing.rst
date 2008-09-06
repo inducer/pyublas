@@ -6,7 +6,8 @@ Installation
 This tutorial will walk you through the process of building PyUblas. To follow,
 you really only need three basic things:
 
-* A UNIX-like machine with web access.
+* A UNIX-like machine with web access. (Running Windows? See
+  :ref:`boost-build-install`.)
 * A C++ compiler, preferably a Version 4.x gcc.
 * A working `Python <http://www.python.org>`_ installation, Version 2.4 or newer.
 
@@ -91,17 +92,28 @@ it::
 
 (If you're not sure, repeating these commands will not hurt.)
 
-Step 4: Build PyUblas
+Step 4: Create and Customize a Configuration File
+-------------------------------------------------
+
+Copy and paste the following text into a file called
+:file:`.aksetup-defaults.py` (Make sure not to miss
+the initial dot, it's important.) in your home directory::
+
+    BOOST_BINDINGS_INC_DIR = ['/home/andreas/pool/include/boost-bindings']
+    BOOST_INC_DIR = ['/home/andreas/pool/include/boost-1_35']
+    BOOST_LIB_DIR = ['/home/andreas/pool/lib']
+    BOOST_PYTHON_LIBNAME = ['boost_python-gcc42-mt']
+
+You will need to adapt the path names in this file to your personal
+situation, of course.
+
+Step 5: Build PyUblas
 ---------------------
 
 Just type::
 
     $ cd PyUblas-VERSION # if you're not there already
-    $ ./configure \
-      --boost-inc-dir=$HOME/pool/include/boost-1_35 \
-      --boost-lib-dir=$HOME/pool/lib \
-      --boost-python-libname=boost_python-gcc42-mt
-    $ su -c "make install"
+    $ sudo python setup.py install
 
 Note that ``gcc42`` is a compiler tag that depends on the compiler
 with which you built boost. Check the contents of your boost 
@@ -109,7 +121,7 @@ library directory to find out what the correct tag is.
 
 Once that works, congratulations! You've successfully built PyUblas.
 
-Step 5: Test PyUblas
+Step 6: Test PyUblas
 --------------------
 
 If you'd like to be extra-careful, you can run PyUblas's unit tests::
@@ -118,3 +130,13 @@ If you'd like to be extra-careful, you can run PyUblas's unit tests::
     $ python test.py
 
 If it says "OK" at the end, you're golden.
+
+.. _boost-build-install:
+
+Alternate Installation using Boost.Build
+========================================
+
+MSVC users can build PyUblas using boost bjam. Unpack Boost in a parallel
+directory to pyublas and then run bjam in the :file:`pyublas` directory. A
+subdirectory named "pyublas" will be created with the files required for the
+Python extension module.

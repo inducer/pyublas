@@ -10,7 +10,7 @@ with matrix and vector types immediately derived from and closely integrated wit
 Ublas. And best of all: There's no copying at the language boundary.
 
 PyUblas is built using and meant to be used with 
-`Boost Python <http://www.boost.org/doc/libs/1_35_0/libs/numeric/ublas/doc/index.htm>`_.
+`Boost Python <http://www.boost.org/doc/libs/1_35_0/libs/python>`_.
 
 PyUblas also has its own `web page <http://mathema.tician.de/software/pyublas>`_.
 
@@ -54,7 +54,7 @@ Table of Contents
 .. toctree::
     :maxdepth: 2
 
-    installation  
+    installing
     cpptypes
     converters
     wrapping
