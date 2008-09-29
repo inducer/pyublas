@@ -32,14 +32,15 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in .build/html."
 
-web:
-	mkdir -p .build/web .build/doctrees
-	mkdir -p .static .templates
-	$(SPHINXBUILD) -b web $(ALLSPHINXOPTS) .build/web
+pickle:
+	mkdir -p build/pickle build/doctrees
+	$(SPHINXBUILD) -b pickle $(ALLSPHINXOPTS) build/pickle
 	@echo
-	@echo "Build finished; now you can run"
-	@echo "  python -m sphinx.web .build/web"
-	@echo "to start the server."
+	@echo "Build finished; now you can process the pickle files or run"
+	@echo "  sphinx-web build/pickle"
+	@echo "to start the sphinx-web server."
+
+web: pickle
 
 htmlhelp:
 	mkdir -p .build/htmlhelp .build/doctrees
