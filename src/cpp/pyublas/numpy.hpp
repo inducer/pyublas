@@ -38,7 +38,9 @@
 #include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <numpy/arrayobject.h>
-
+#include <boost/range.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_class.hpp>
 
 
 
@@ -169,10 +171,15 @@ namespace pyublas
         }
       }
 
-      /* MISSING
-      Range constructor 	X(i, j) 	
-      i and j are Input Iterators whose value type is convertible to T 	X
-      */
+      template<typename in_t>
+        numpy_array (in_t const& in, typename boost::enable_if<boost::is_class<in_t> >::type* dummy=0) {
+          if (boost::size (in)) {
+            npy_intp dims[] = { boost::size (in) };
+            m_numpy_array = boost::python::handle<>(
+                PyArray_SimpleNew(1, dims, get_typenum(T())));
+            std::copy (boost::begin (in), boost::end (in), begin());
+          }
+        }
 
       numpy_array(const boost::python::handle<> &obj)
         : m_numpy_array(obj)
