@@ -40,9 +40,9 @@
 #include <numpy/arrayobject.h>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
-
-
-
+#include <boost/range.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_class.hpp>
 
 namespace
 {
@@ -169,6 +169,16 @@ namespace pyublas
           std::fill(begin(), end(), v);
         }
       }
+
+    template<typename in_t>
+    numpy_array (in_t const& in, typename boost::enable_if<boost::is_class<in_t> >::type* dummy=0) {
+      if (boost::size (in)) {
+	npy_intp dims[] = { boost::size (in) };
+	m_numpy_array = boost::python::handle<>(
+						PyArray_SimpleNew(1, dims, get_typenum(T())));
+	std::copy (boost::begin (in), boost::end (in), begin());
+      }
+    }
 
       /* MISSING
       Range constructor 	X(i, j) 	
@@ -736,8 +746,7 @@ namespace pyublas
       typedef typename self_t::difference_type difference_type;
 
       numpy_vec_iterator (numpy_vector & _vec) :
-	vec (_vec),
-	it (&_vec[0])
+	it (_vec.array().begin())
       {}
 
       //    private:
@@ -766,7 +775,6 @@ namespace pyublas
 	it += n;
       }
 
-      numpy_vector & vec;
       T* it;
     };
 
@@ -788,8 +796,7 @@ namespace pyublas
       typedef typename self_t::difference_type difference_type;
 
       numpy_vec_const_iterator (numpy_vector const& _vec) :
-	vec (_vec),
-	it (&_vec[0])
+	it (_vec.array().begin())
       {}
 
       //    private:
@@ -818,7 +825,6 @@ namespace pyublas
 	it += n;
       }
 
-      numpy_vector const& vec;
       T const* it;
     };
 
@@ -889,7 +895,16 @@ namespace pyublas
         boost::numeric::ublas::vector_slice< numpy_vector<T> >
         super;
 
+    //Make a fake 0-length array just for default constructor
+    static numpy_array<T> make_fake_array() { return numpy_array<T>(0); }
+
            public:
+    numpy_strided_vector() :
+      vector_holder (make_fake_array()),
+        super(this->m_vector, boost::numeric::ublas::slice(0, 1, this->m_vector.size()))
+    {}
+
+
       // observe that PyObject handles are implicitly convertible
       // to numpy_array
       numpy_strided_vector(const numpy_array<T> &s)
@@ -927,11 +942,13 @@ namespace pyublas
       numpy_array<T> const &array() const
       { return this->m_vector.data(); }
 
-             typename super::size_type stride() const
+    typename super::difference_type stride() const
       { return super::stride(); }
 
-      npy_intp stride(npy_intp i) const
+    typename super::difference_type stride(npy_intp i) const
       { return this->m_vector.stride(i); }
+
+    typedef npy_intp stride_type;
 
     class numpy_strided_vec_iterator :
       public boost::iterator_facade<
@@ -951,8 +968,8 @@ namespace pyublas
       typedef typename self_t::difference_type difference_type;
 
       numpy_strided_vec_iterator (numpy_strided_vector & _vec) :
-	vec (_vec),
-	it (&_vec[0])
+	stride (_vec.stride()),
+	it (_vec.stride() >= 0 ? _vec.m_vector.array().begin() : _vec.m_vector.array().end()-1)
       {}
 
       //    private:
@@ -964,24 +981,24 @@ namespace pyublas
       }
 
       void increment() {
-	it += vec.stride();
+	it += stride;
       }
 
       T& dereference() const { return *it; }
 
       void decrement() {
-	it -= vec.stride();
+	it -= stride;
       }
 
       difference_type
       distance_to (numpy_strided_vec_iterator const& other) const 
-      { return (other.it - this->it)/vec.stride();}
+      { return (other.it - this->it)/difference_type (stride);}
 
       void advance (difference_type n) {
-	it += n*vec.stride();
+	it += n*stride;
       }
 
-      numpy_strided_vector & vec;
+      typename numpy_strided_vector::stride_type stride;
       T* it;
     };
 
@@ -1003,8 +1020,8 @@ namespace pyublas
       typedef typename self_t::difference_type difference_type;
 
       numpy_strided_vec_const_iterator (numpy_strided_vector const& _vec) :
-	vec (_vec),
-	it (&_vec[0])
+	stride (_vec.stride()),
+	it (_vec.stride() >= 0 ? _vec.m_vector.array().begin() : _vec.m_vector.array().end()-1)
       {}
 
       //    private:
@@ -1016,24 +1033,24 @@ namespace pyublas
       }
 
       void increment() {
-	it += vec.stride();
+	it += stride;
       }
 
       T const& dereference() const { return *it; }
 
       void decrement() {
-	it -= vec.stride();
+	it -= stride;
       }
 
       difference_type
       distance_to (numpy_strided_vec_const_iterator const& other) const 
-      { return (other.it - this->it)/vec.stride();}
+      { return (other.it - this->it)/difference_type (stride);}
 
       void advance (difference_type n) {
-	it += n*vec.stride();
+	it += n*stride;
       }
 
-      numpy_strided_vector const& vec;
+      typename numpy_strided_vector::stride_type stride;
       T const* it;
     };
 
