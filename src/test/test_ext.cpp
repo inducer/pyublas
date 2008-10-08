@@ -19,6 +19,17 @@ namespace ublas = boost::numeric::ublas;
 
 
 
+int size_or_neg_1(invalid_ok<numpy_vector<double> > x)
+{
+  if (x->is_valid())
+    return x->size();
+  else
+    return -1;
+}
+
+
+
+
 template <class T>
 T doublify(T x)
 {
@@ -138,6 +149,8 @@ void test_strided_speed()
 
 BOOST_PYTHON_MODULE(test_ext)
 {
+  def("size_or_neg_1", size_or_neg_1);
+
   def("dbl_int", doublify<int>);
   def("dbl_float", doublify<double>);
 
