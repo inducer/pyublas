@@ -9,6 +9,11 @@ import pyublas.test_ext as te
 
 
 class TestMatrices(unittest.TestCase):
+    def test_invalid_ok(self):
+        v = numpy.array([1,2,3,4,5], dtype=numpy.float64)
+        assert te.size_or_neg_1(None) == -1
+        assert te.size_or_neg_1(v) == 5
+
     def test_array_scalars(self):
         u = numpy.int32(5)
         assert te.dbl_int(u) == 10
