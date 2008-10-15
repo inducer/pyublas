@@ -172,14 +172,16 @@ namespace pyublas
       }
 
       template<typename in_t>
-        numpy_array (in_t const& in, typename boost::enable_if<boost::is_class<in_t> >::type* dummy=0) {
-          if (boost::size (in)) {
-            npy_intp dims[] = { boost::size (in) };
-            m_numpy_array = boost::python::handle<>(
-                PyArray_SimpleNew(1, dims, get_typenum(T())));
-            std::copy (boost::begin (in), boost::end (in), begin());
-          }
+      numpy_array (in_t const& in, typename boost::enable_if<boost::is_class<in_t> >::type* dummy=0) 
+      {
+        if (boost::size (in)) 
+        {
+          npy_intp dims[] = { boost::size (in) };
+          m_numpy_array = boost::python::handle<>(
+              PyArray_SimpleNew(1, dims, get_typenum(T())));
+          std::copy (boost::begin (in), boost::end (in), begin());
         }
+      }
 
       numpy_array(const boost::python::handle<> &obj)
         : m_numpy_array(obj)
@@ -202,6 +204,13 @@ namespace pyublas
             PYUBLAS_PYERROR(ValueError, "argument array does not have native endianness");
         if (PyArray_ITEMSIZE(obj.get()) != sizeof(T))
             PYUBLAS_PYERROR(ValueError, "itemsize does not match size of target type");
+      }
+
+      numpy_array copy() const
+      {
+        boost::python::handle<> cp(PyArray_NewCopy(
+              reinterpret_cast<PyArrayObject *>(m_numpy_array.get()), NPY_ANYORDER));
+        return numpy_array(cp);
       }
 
     private:
@@ -527,6 +536,11 @@ namespace pyublas
     template <class Derived, class Super>
     struct vector_functionality
     {
+      Derived copy() const
+      {
+        return Derived(static_cast<const Derived *>(this)->array());
+      }
+
       // numpy array metadata
       bool is_valid() const 
       { return static_cast<const Derived *>(this)->array().is_valid(); }
@@ -628,7 +642,7 @@ namespace pyublas
   class numpy_vector
   : public boost::numeric::ublas::vector<T, numpy_array<T> >,
   public detail::vector_functionality<numpy_vector<T>,  
-    boost::numeric::ublas::vector<T, numpy_array<T> > >
+  boost::numeric::ublas::vector<T, numpy_array<T> > >
   {
     private:
       typedef 
@@ -657,9 +671,9 @@ namespace pyublas
       { }
 
       explicit 
-        numpy_vector(typename super::size_type size)
-        : super(size) 
-        { }
+      numpy_vector(typename super::size_type size)
+      : super(size) 
+      { }
 
       numpy_vector (
           typename super::size_type size, 
@@ -867,6 +881,11 @@ namespace pyublas
       numpy_matrix (const boost::numeric::ublas::matrix_expression<AE> &ae)
       : super(ae)
       {
+      }
+
+      numpy_matrix copy() const
+      {
+        return numpy_matrix(super::data().copy());
       }
 
       super &as_ublas() 
