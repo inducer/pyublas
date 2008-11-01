@@ -5,6 +5,8 @@ import pyublas._internal
 
 
 has_sparse_wrappers = pyublas._internal.has_sparse_wrappers
+unstrided_size = pyublas._internal.unstrided_size
+strided_size = pyublas._internal.strided_size
 
 
 

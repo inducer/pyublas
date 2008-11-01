@@ -32,6 +32,16 @@ namespace ublas = boost::numeric::ublas;
 
 namespace
 {
+  template<class T>
+  typename numpy_vector<T>::size_type unstrided_size(const numpy_vector<T> &v)
+  { return v.size(); }
+
+  template<class T>
+  typename numpy_strided_vector<T>::size_type strided_size(const numpy_strided_vector<T> &v)
+  { return v.size(); }
+
+
+  
   template <class TargetType>
   struct array_converter_base
   {
@@ -353,6 +363,9 @@ namespace
     py::to_python_converter<
         numpy_strided_vector<T>,
         typename vector_converter<numpy_strided_vector<T> >::to_python>();
+
+    py::def("unstrided_size", unstrided_size<T>);
+    py::def("strided_size", strided_size<T>);
   }
 }
 
