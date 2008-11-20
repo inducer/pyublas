@@ -5,8 +5,8 @@ installation should be easy and quick.
 
 If you don't want to continue reading, just try the regular
 
-  ./configure --help
-  ./configure --some-options
+  ./configure.py --help
+  ./configure.py --some-options
   make
   sudo make install
 
@@ -32,10 +32,3 @@ configure, and it will automatically update these files for you.
 
 This is particularly handy if you want to perform an unattended or automatic
 installation via easy_install.
-
----
-
-MSVC users can build using boost bjam. Unpack boost in a parallel directory
-to pyublas and then run bjam in the pyublas directory. A subdirectory named
-"pyublas" will be created with the files required for the Python extension
-module.
