@@ -337,14 +337,17 @@ namespace
         );
 
     // conversion of arrays
+    typedef numpy_array<T> ary;
     typedef numpy_vector<T> vec;
     typedef numpy_matrix<T, ublas::row_major> rm_mat;
     typedef numpy_matrix<T, ublas::column_major> cm_mat;
 
+    typedef vector_converter<ary> ary_converter;
     typedef vector_converter<vec> vec_converter;
     typedef matrix_converter<cm_mat> cm_mat_converter;
     typedef matrix_converter<rm_mat> rm_mat_converter;
 
+    register_array_converter<ary_converter>();
     register_vector_converter<vec_converter>();
     register_array_converter<cm_mat_converter>();
     register_array_converter<rm_mat_converter>();
@@ -355,6 +358,8 @@ namespace
       <vec_converter, ublas::bounded_vector<T, 2> >();
     register_indirect_array_converter
       <vec_converter, ublas::bounded_vector<T, 3> >();
+    register_indirect_array_converter
+      <vec_converter, ublas::bounded_vector<T, 4> >();
     register_indirect_array_converter
       <rm_mat_converter, ublas::matrix<T, ublas::row_major> >();
     register_indirect_array_converter

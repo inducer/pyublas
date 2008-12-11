@@ -437,6 +437,11 @@ namespace pyublas
           return boost::python::handle<>(
               boost::python::borrowed(Py_None));
       }
+
+      boost::python::handle<> to_python() const
+      {
+        return handle();
+      }
   };
 
 
