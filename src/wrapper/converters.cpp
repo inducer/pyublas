@@ -16,6 +16,7 @@
 #include <pyublas/numpy.hpp>
 #include <boost/python/converter/implicit.hpp>
 #include <boost/python/converter/registry.hpp>
+#include <boost/format.hpp>
 
 #include <iostream>
 #include <boost/numeric/ublas/io.hpp>
@@ -32,6 +33,8 @@ namespace ublas = boost::numeric::ublas;
 
 namespace
 {
+  bool trace_conversion = false;
+
   template<class T>
   typename numpy_vector<T>::size_type unstrided_size(const numpy_vector<T> &v)
   { return v.size(); }
@@ -133,10 +136,25 @@ namespace
       static void *check(PyObject* obj)
       {
         if (!PyArray_Check(obj))
+        {
+          if (trace_conversion)
+            std::cerr 
+              << boost::format("obj %1% rejected as vec: not a numpy array") % obj
+              << std::endl;
           return 0;
+        }
 
         if (!is_storage_compatible<typename super::value_type>(obj))
+        {
+          if (trace_conversion)
+            std::cerr 
+              << boost::format("obj %1% rejected as vec: not storage-compatible with %2%")
+                  % obj % typeid(typename super::value_type).name()
+              << std::endl;
+
           return 0;
+        }
+
 
         return obj;
       }
@@ -145,6 +163,7 @@ namespace
       {
         if (obj == Py_None)
           return obj;
+
         return check(obj);
       }
 
@@ -181,30 +200,82 @@ namespace
       static void *check(PyObject* obj)
       {
         if (!PyArray_Check(obj))
+        {
+          if (trace_conversion)
+            std::cerr 
+              << boost::format("obj %1% rejected as mat: not a numpy array") % obj
+              << std::endl;
           return 0;
+        }
+
         if (!is_storage_compatible<typename super::value_type>(obj))
+        {
+          if (trace_conversion)
+            std::cerr 
+              << boost::format("obj %1% rejected as mat: not storage-compatible with %2%")
+                  % obj % typeid(typename super::value_type).name()
+              << std::endl;
+
           return 0;
+        }
+
         if (PyArray_NDIM(obj) != 2)
+        {
+          if (trace_conversion)
+            std::cerr 
+              << boost::format("obj %1% rejected as mat: not 2-dimensional") % obj
+              << std::endl;
           return 0;
+        }
 
         if (PyArray_STRIDE(obj, 1) == PyArray_ITEMSIZE(obj))
         {
           // row-major
           if (!is_row_major(typename MatrixType::orientation_category()))
+          {
+            if (trace_conversion)
+              std::cerr 
+                << boost::format("obj %1% rejected as mat: not row-major") % obj
+                << std::endl;
             return 0;
+          }
+
           if (!PyArray_CHKFLAGS(obj, NPY_C_CONTIGUOUS))
+          {
+            if (trace_conversion)
+              std::cerr 
+                << boost::format("obj %1% rejected as row-major mat: not C-contiguous") % obj
+                << std::endl;
             return 0;
+          }
         }
         else if (PyArray_STRIDE(obj, 0) == PyArray_ITEMSIZE(obj))
         {
           if (is_row_major(typename MatrixType::orientation_category()))
+          {
+            if (trace_conversion)
+              std::cerr 
+                << boost::format("obj %1% rejected as mat: not column-major") % obj
+                << std::endl;
             return 0;
+          }
+
           if (!PyArray_CHKFLAGS(obj, NPY_F_CONTIGUOUS))
+          {
+            if (trace_conversion)
+              std::cerr 
+                << boost::format("obj %1% rejected as column-major mat: not Fortran-contiguous") % obj
+                << std::endl;
             return 0;
+          }
         }
         else
         {
           // no dim has stride == 1
+          if (trace_conversion)
+            std::cerr 
+              << boost::format("obj %1% rejected as mat: no unit-size stride") % obj
+              << std::endl;
           return 0;
         }
 
@@ -372,6 +443,13 @@ namespace
     py::def("unstrided_size", unstrided_size<T>);
     py::def("strided_size", strided_size<T>);
   }
+
+
+
+  void set_trace(bool t)
+  {
+    trace_conversion = t;
+  }
 }
 
 
@@ -394,4 +472,6 @@ void pyublas_expose_converters()
   expose_converters<npy_double>();
   expose_converters<std::complex<float> >();
   expose_converters<std::complex<double> >();
+
+  py::def("set_trace", set_trace);
 }
