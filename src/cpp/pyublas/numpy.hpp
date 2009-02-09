@@ -645,10 +645,12 @@ namespace pyublas
     class numpy_vec_iterator : public boost::iterator_facade<numpy_vec_iterator<T>, T,
                                       boost::numeric::ublas::dense_random_access_iterator_tag>
     {
-      public:
+      private:
         typedef  boost::iterator_facade<numpy_vec_iterator, T,
-                                        boost::numeric::ublas::dense_random_access_iterator_tag> self_t;
+                 boost::numeric::ublas::dense_random_access_iterator_tag> 
+                   self_t;
 
+      public:
         typedef typename self_t::difference_type difference_type;
 
         numpy_vec_iterator() 
@@ -839,29 +841,19 @@ namespace pyublas
                                >::type,
       boost::numeric::ublas::dense_random_access_iterator_tag>
     {
-      public:
+      private:
         typedef  boost::iterator_facade<
           numpy_strided_vec_iterator, T,
           boost::numeric::ublas::dense_random_access_iterator_tag>
         self_t;
 
+      public:
         typedef typename self_t::difference_type difference_type;
+        typedef typename numpy_strided_vector<T>::stride_type stride_type;
 
-        numpy_strided_vec_iterator() 
-        : it(0)
+        numpy_strided_vec_iterator(T *it, stride_type s)
+        : stride(s), it(it)
         { }
-
-        numpy_strided_vec_iterator(T *it)
-        : it(it)
-        { }
-        /*
-        numpy_strided_vec_iterator(
-            numpy_strided_vector<typename self_t::value_type> &_vec) 
-        : stride (_vec.stride()),
-        it (_vec.stride() >= 0 ? 
-            _vec.m_vector.array().begin() : _vec.m_vector.array().end()-1)
-        { }
-        */
 
         // private:
 
@@ -886,8 +878,8 @@ namespace pyublas
         void advance (difference_type n) 
         { it += n*stride; }
 
-        typename numpy_strided_vector<T>::stride_type stride;
-
+      private:
+        stride_type stride;
         T* it;
     };
   } // end namespace detail
@@ -914,8 +906,8 @@ namespace pyublas
       static numpy_array<T> make_fake_array() { return numpy_array<T>(0); }
 
     public:
-      numpy_strided_vector() :
-        vector_holder (make_fake_array()),
+      numpy_strided_vector() 
+        : vector_holder (make_fake_array()),
         super(this->m_vector, boost::numeric::ublas::slice(0, 1, this->m_vector.size()))
       { }
 
@@ -969,33 +961,33 @@ namespace pyublas
       iterator begin() 
       { 
         if (stride() >= 0)
-          return iterator(this->m_vector.array().begin()); 
+          return iterator(this->m_vector.array().begin(), stride()); 
         else
-          return iterator(this->m_vector.array().end()-1); 
+          return iterator(this->m_vector.array().end()-1, stride()); 
       }
 
       iterator end() 
       {
         if (stride() >= 0)
-          return iterator(this->m_vector.array().end()); 
+          return iterator(this->m_vector.array().end(), stride()); 
         else
-          return iterator(this->m_vector.array().end() - 1 - this->size()); 
+          return iterator(this->m_vector.array().end() - 1 - this->size(), stride()); 
       }
 
       const_iterator begin() const 
       { 
         if (stride() >= 0)
-          return const_iterator(this->m_vector.array().begin()); 
+          return const_iterator(this->m_vector.array().begin(), stride()); 
         else
-          return const_iterator(this->m_vector.array().end()-1); 
+          return const_iterator(this->m_vector.array().end()-1, stride()); 
       }
 
       const_iterator end() const 
       {
         if (stride() >= 0)
-          return const_iterator(this->m_vector.array().end()); 
+          return const_iterator(this->m_vector.array().end(), stride()); 
         else
-          return const_iterator(this->m_vector.array().end() - 1 - this->size()); 
+          return const_iterator(this->m_vector.array().end() - 1 - this->size(), stride()); 
       }
   };
 
