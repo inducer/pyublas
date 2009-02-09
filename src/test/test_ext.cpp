@@ -115,19 +115,21 @@ numpy_vector<double> make_resized_vector(unsigned n)
 #include <boost/range.hpp>
 //#include <iostream>
 template<typename vec_t>
-void D (vec_t & v) {
-  typename boost::range_iterator<vec_t>::type i = boost::begin (v);
-  typename boost::range_iterator<vec_t>::type e = boost::end (v);
+void D(vec_t &v) 
+{
+  typename boost::range_iterator<vec_t>::type i = boost::begin(v);
+  typename boost::range_iterator<vec_t>::type e = boost::end(v);
   for (; i != e; ++i)
     *i *= 2;
 }
 
 template<typename vec_t>
-void test_speed() {
-  vec_t x (ublas::scalar_vector<double> (100000, 1));
+void test_speed() 
+{
+  vec_t x (ublas::scalar_vector<double>(100000, 1));
   //  std::cout << &(*boost::begin (x)) << ' ' << &(*boost::end (x)) << '\n';
   for (unsigned i = 0; i < 1000; ++i)
-    D (x);
+    D(x);
 }
 
 void test_ublas_speed()

@@ -171,10 +171,10 @@ namespace pyublas
       }
 
       template<typename in_t>
-      numpy_array (in_t const& in, 
-          typename boost::enable_if<boost::is_class<in_t> >::type* dummy=0) 
+      numpy_array(in_t const& in, 
+          typename boost::enable_if<boost::is_class<in_t> >::type *dummy=0) 
       {
-        if (boost::size (in)) 
+        if (boost::size(in)) 
         {
           npy_intp dims[] = { boost::size (in) };
           m_numpy_array = boost::python::handle<>(
@@ -642,31 +642,27 @@ namespace pyublas
 
 
     template<class T>
-    class numpy_vec_iterator : public boost::iterator_facade<numpy_vec_iterator<T>,
-                                      typename boost::mpl::if_<boost::is_const<T>,
-                                                               const T,
-                                                               T
-                                                               >::type,
+    class numpy_vec_iterator : public boost::iterator_facade<numpy_vec_iterator<T>, T,
                                       boost::numeric::ublas::dense_random_access_iterator_tag>
     {
       public:
-        typedef  boost::iterator_facade<numpy_vec_iterator,
-                                        typename boost::mpl::if_<boost::is_const<T>,
-                                                                 const T,
-                                                                 T
-                                                                 >::type,
+        typedef  boost::iterator_facade<numpy_vec_iterator, T,
                                         boost::numeric::ublas::dense_random_access_iterator_tag> self_t;
 
         typedef typename self_t::difference_type difference_type;
 
-        numpy_vec_iterator (numpy_vector<T> & _vec) 
-        : it (_vec.array().begin())
-        {}
+        numpy_vec_iterator() 
+        : it(0)
+        { }
+
+        numpy_vec_iterator(T *it)
+        : it(it)
+        { }
 
         // private:
         friend class boost::iterator_core_access;
 
-        bool equal (numpy_vec_iterator const& other) const 
+        bool equal(numpy_vec_iterator const &other) const 
         {
           return other.it == this->it;
         }
@@ -680,7 +676,7 @@ namespace pyublas
         void decrement() 
         { --it; }
 
-        difference_type distance_to (numpy_vec_iterator const& other) const 
+        difference_type distance_to (numpy_vec_iterator const &other) const 
         { return (other.it - this->it);}
 
         void advance (difference_type n) 
@@ -729,7 +725,7 @@ namespace pyublas
       : super(size) 
       { }
 
-      numpy_vector (
+      numpy_vector(
           typename super::size_type size, 
           const typename super::value_type &init)
         : super(size, init) 
@@ -796,28 +792,16 @@ namespace pyublas
       typedef detail::numpy_vec_iterator<const T> const_iterator;
 
       iterator begin() 
-      {
-        return iterator (*this); 
-      }
+      { return iterator(array().begin()); }
 
       iterator end() 
-      {
-        iterator it = begin();
-        it.advance (this->size());
-        return it;
-      }
+      { return iterator(array().end()); }
 
       const_iterator begin() const 
-      {
-        return const_iterator (*this); 
-      }
+      { return const_iterator(array().begin()); }
 
       const_iterator end() const 
-      {
-        const_iterator it = begin();
-        it.advance (this->size());
-        return it;
-      }
+      { return const_iterator(array().end()); }
 
   };
 
@@ -842,6 +826,9 @@ namespace pyublas
         { }
     };
 
+
+
+
     template<typename T>
     class numpy_strided_vec_iterator 
     : public boost::iterator_facade<
@@ -850,25 +837,31 @@ namespace pyublas
                                const T,
                                T
                                >::type,
-      boost::numeric::ublas::dense_random_access_iterator_tag> // Is this correct?
+      boost::numeric::ublas::dense_random_access_iterator_tag>
     {
       public:
         typedef  boost::iterator_facade<
-          numpy_strided_vec_iterator,
-          typename boost::mpl::if_<boost::is_const<T>,
-                                   const T,
-                                   T
-                                   >::type,
-          boost::numeric::ublas::dense_random_access_iterator_tag // Is this correct?
-          >
+          numpy_strided_vec_iterator, T,
+          boost::numeric::ublas::dense_random_access_iterator_tag>
         self_t;
 
         typedef typename self_t::difference_type difference_type;
 
-        numpy_strided_vec_iterator (numpy_strided_vector<T> & _vec) 
-        : stride (_vec.stride()),
-        it (_vec.stride() >= 0 ? _vec.m_vector.array().begin() : _vec.m_vector.array().end()-1)
+        numpy_strided_vec_iterator() 
+        : it(0)
         { }
+
+        numpy_strided_vec_iterator(T *it)
+        : it(it)
+        { }
+        /*
+        numpy_strided_vec_iterator(
+            numpy_strided_vector<typename self_t::value_type> &_vec) 
+        : stride (_vec.stride()),
+        it (_vec.stride() >= 0 ? 
+            _vec.m_vector.array().begin() : _vec.m_vector.array().end()-1)
+        { }
+        */
 
         // private:
 
@@ -974,23 +967,35 @@ namespace pyublas
       typedef detail::numpy_strided_vec_iterator<const T> const_iterator;
 
       iterator begin() 
-      { return iterator (*this); }
+      { 
+        if (stride() >= 0)
+          return iterator(this->m_vector.array().begin()); 
+        else
+          return iterator(this->m_vector.array().end()-1); 
+      }
 
       iterator end() 
       {
-        iterator it = begin();
-        it.advance (this->size());
-        return it;
+        if (stride() >= 0)
+          return iterator(this->m_vector.array().end()); 
+        else
+          return iterator(this->m_vector.array().end() - 1 - this->size()); 
       }
 
       const_iterator begin() const 
-      { return const_iterator (*this); }
+      { 
+        if (stride() >= 0)
+          return const_iterator(this->m_vector.array().begin()); 
+        else
+          return const_iterator(this->m_vector.array().end()-1); 
+      }
 
       const_iterator end() const 
       {
-        const_iterator it = begin();
-        it.advance (this->size());
-        return it;
+        if (stride() >= 0)
+          return const_iterator(this->m_vector.array().end()); 
+        else
+          return const_iterator(this->m_vector.array().end() - 1 - this->size()); 
       }
   };
 
