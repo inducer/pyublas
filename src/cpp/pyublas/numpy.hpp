@@ -834,11 +834,7 @@ namespace pyublas
     template<typename T>
     class numpy_strided_vec_iterator 
     : public boost::iterator_facade<
-      numpy_strided_vec_iterator<T>, 
-      typename boost::mpl::if_<boost::is_const<T>,
-                               const T,
-                               T
-                               >::type,
+      numpy_strided_vec_iterator<T>, T,
       boost::numeric::ublas::dense_random_access_iterator_tag>
     {
       private:
