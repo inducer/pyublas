@@ -6,13 +6,11 @@
 
 def get_config_schema():
     from aksetup_helper import ConfigSchema, Option, \
-            IncludeDir, LibraryDir, Libraries, \
-            Switch, StringListOption
+            IncludeDir, LibraryDir, Libraries, BoostLibraries, \
+            Switch, StringListOption, make_boost_base_options
 
-    return ConfigSchema([
-        IncludeDir("BOOST", []),
-        LibraryDir("BOOST", []),
-        Libraries("BOOST_PYTHON", ["boost_python-gcc42-mt"]),
+    return ConfigSchema(make_boost_base_options() + [
+        BoostLibraries("python"),
 
         Switch("WITH_SPARSE_WRAPPERS", False, "Whether to build sparse wrappers"),
         Switch("USE_ITERATORS", False, "Whether to use iterators (faster, requires new Boost)"),
