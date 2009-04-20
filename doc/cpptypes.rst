@@ -142,11 +142,17 @@ Reference Documentation
                    constructor numpy_vector(size_type size, const value_type &init)
                    constructor numpy_vector(const numpy_vector &v)
                    constructor numpy_vector(const boost::numeric::ublas::vector_expression<AE> &ae)
+                   constructor numpy_vector(int ndim, const npy_intp *dims, const boost::numeric::ublas::vector_expression<AE> &ae)
 
         Construct a new :ctype:`numpy_vector` instance.
 
         The ``(ndim, dims)`` constructor form can be used to specify
         the Python-side shape of the array at construction time.
+        This is extended by the ``(ndim, dims, ae)`` form, which allows
+        to specify the vector expression from which the vector is
+        initialized, along with its Python-side shape. Both the
+        initializer and the Python-side shape are assumed to yield
+        identical vector sizes.
 
         Observe that PyObject handles are implicitly convertible
         to :ctype:`numpy_array`, so that you can invoke the 

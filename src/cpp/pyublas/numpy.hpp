@@ -722,6 +722,15 @@ namespace pyublas
             numpy_array<T>(ndim_, dims_))
       { }
 
+      template<class AE>
+      numpy_vector(int ndim_, const npy_intp *dims_, 
+          const boost::numeric::ublas::vector_expression<AE> &ae)
+        : super(ae)
+      { 
+        assert(size() == size_from_dims(ndim_, dims_));
+        array().reshape(ndim_, dims_);
+      }
+
       explicit 
       numpy_vector(typename super::size_type size)
       : super(size) 
