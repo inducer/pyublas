@@ -62,9 +62,9 @@ namespace
 namespace pyublas
 {
   inline NPY_TYPES get_typenum(bool) { return NPY_BOOL; }
-  inline NPY_TYPES get_typenum(npy_bool) { return NPY_BOOL; }
+  // inline NPY_TYPES get_typenum(npy_bool) { return NPY_BOOL; }
   inline NPY_TYPES get_typenum(npy_byte) { return NPY_BYTE; }
-  // NPY_TYPES get_typenum(npy_ubyte) { return NPY_UBYTE; }
+  inline NPY_TYPES get_typenum(npy_ubyte) { return NPY_UBYTE; }
   inline NPY_TYPES get_typenum(npy_short) { return NPY_SHORT; }
   inline NPY_TYPES get_typenum(npy_ushort) { return NPY_USHORT; }
   inline NPY_TYPES get_typenum(npy_int) { return NPY_INT; }
