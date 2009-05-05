@@ -94,7 +94,11 @@ namespace pyublas
      * 'long int' are the same on 32-bit machines, which can lead
      * to typenum mismatches. Therefore, for integers, we only
      * compare size and signedness.
+     *
+     * Also, bool and the chars are storage-compatible usually.
      */
+
+    NPY_TYPES typenum = NPY_TYPES(PyArray_TYPE(ary));
 
     if (boost::is_integral<T>::value && PyArray_ISINTEGER(ary))
     {
@@ -102,8 +106,16 @@ namespace pyublas
           && bool(boost::is_signed<T>::value) 
           == bool(PyArray_ISSIGNED(ary)));
     }
+    else if (typenum == NPY_BOOL && (
+          boost::is_same<T, signed char>::value ||
+          boost::is_same<T, unsigned char>::value))
+    {
+      return (sizeof(T) == PyArray_ITEMSIZE(ary)
+          && bool(boost::is_signed<T>::value) 
+          == bool(PyArray_ISSIGNED(ary)));
+    }
     else
-      return PyArray_TYPE(ary) == get_typenum(T());
+      return typenum == get_typenum(T());
   }
 
 
