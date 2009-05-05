@@ -457,8 +457,6 @@ namespace
 
 void pyublas_expose_converters()
 {
-  import_array();
-
   expose_converters<npy_byte>();
   expose_converters<npy_ubyte>();
   expose_converters<npy_short>();
