@@ -13,4 +13,5 @@ MANIFEST
 dist
 *.egg*
 *.so
+*.pyd
 .build
