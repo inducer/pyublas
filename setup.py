@@ -120,7 +120,6 @@ def main():
             zip_safe=False,
 
             packages=["pyublas"],
-            package_dir={"pyublas": "src/python"},
             ext_package="pyublas",
             ext_modules=[ 
                     NumpyExtension("_internal", 
