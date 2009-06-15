@@ -1,6 +1,6 @@
 import pyublas
 import numpy
-import pyublas.test_ext as te
+import pyublas.testhelp_ext as te
 
 
 

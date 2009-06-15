@@ -165,7 +165,7 @@ void test_strided_speed()
 
 
 
-BOOST_PYTHON_MODULE(test_ext)
+BOOST_PYTHON_MODULE(testhelp_ext)
 {
   def("size_or_neg_1", size_or_neg_1);
 

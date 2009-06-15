@@ -17,7 +17,7 @@ python-extension _internal
     /boost/python//boost_python
   ;
 
-python-extension test_ext
+python-extension testhelp_ext
   : # sources
     [ glob src/test/*.cpp ]
     /boost/python//boost_python
@@ -27,7 +27,7 @@ install pyublas
   : # sources
     [ glob src/python/*.py ]
     _internal
-    test_ext
+    testhelp_ext
   : # requirements
     <install-dependencies>on
     <install-type>LIB
