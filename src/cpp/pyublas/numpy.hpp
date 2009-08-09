@@ -739,7 +739,7 @@ namespace pyublas
           const boost::numeric::ublas::vector_expression<AE> &ae)
         : super(ae)
       { 
-        assert(size() == size_from_dims(ndim_, dims_));
+        assert(this->size() == size_from_dims(ndim_, dims_));
         array().reshape(ndim_, dims_);
       }
 
