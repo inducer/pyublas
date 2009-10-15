@@ -117,8 +117,6 @@ def main():
                     #"numpy>=1.0.4",
                     #],
 
-            zip_safe=False,
-
             packages=["pyublas"],
             ext_package="pyublas",
             ext_modules=[ 
