@@ -24,7 +24,7 @@ release tar.bz2 file. Then, do this::
 
     $ tar xfj ~/download/boost_1_35_0.tar.bz2
     $ cd boost_1_35_0
-    $ ./configure --prefix=$HOME/pool
+    $ ./configure.py --prefix=$HOME/pool
     $ make
     $ make install
 
