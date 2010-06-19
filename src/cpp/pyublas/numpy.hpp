@@ -171,6 +171,15 @@ namespace pyublas
               get_typenum(T())));
       }
 
+      numpy_array(int ndim_, const npy_intp *dims_, T* data)
+      {
+        m_numpy_array = boost::python::handle<>(
+            PyArray_SimpleNewFromData(
+              ndim_,
+              const_cast<npy_intp *>(dims_),
+              get_typenum(T()), data));
+      }
+
       numpy_array(size_type n, const value_type &v)
       {
         if (n)
@@ -867,6 +876,8 @@ namespace pyublas
       public:
         typedef typename self_t::difference_type difference_type;
         typedef typename numpy_strided_vector<T>::stride_type stride_type;
+
+       numpy_strided_vec_iterator() {}
 
         numpy_strided_vec_iterator(T *it, stride_type s)
         : stride(s), it(it)
