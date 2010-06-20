@@ -171,6 +171,15 @@ namespace pyublas
               get_typenum(T())));
       }
 
+      numpy_array(int ndim_, const npy_intp *dims_, T* data)
+      {
+        m_numpy_array = boost::python::handle<>(
+            PyArray_SimpleNewFromData(
+              ndim_,
+              const_cast<npy_intp *>(dims_),
+              get_typenum(T()), data));
+      }
+
       numpy_array(size_type n, const value_type &v)
       {
         if (n)
