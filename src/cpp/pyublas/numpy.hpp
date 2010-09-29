@@ -730,6 +730,7 @@ namespace pyublas
 
     public:
       numpy_vector ()
+	: super(0)
       { }
 
       // observe that PyObject handles are implicitly convertible
