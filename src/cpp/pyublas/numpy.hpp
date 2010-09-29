@@ -49,7 +49,7 @@ namespace
   static struct _pyublas_array_importer
   {
     _pyublas_array_importer()
-    { 
+    {
       import_array();
     }
   } _array_importer;
@@ -90,7 +90,7 @@ namespace pyublas
   inline
   bool is_storage_compatible(PyObject *ary)
   {
-    /* This piece of code works around the fact that 'int' and 
+    /* This piece of code works around the fact that 'int' and
      * 'long int' are the same on 32-bit machines, which can lead
      * to typenum mismatches. Therefore, for integers, we only
      * compare size and signedness.
@@ -103,7 +103,7 @@ namespace pyublas
     if (boost::is_integral<T>::value && PyArray_ISINTEGER(ary))
     {
       return (sizeof(T) == PyArray_ITEMSIZE(ary)
-          && bool(boost::is_signed<T>::value) 
+          && bool(boost::is_signed<T>::value)
           == bool(PyArray_ISSIGNED(ary)));
     }
     else if (typenum == NPY_BOOL && (
@@ -111,7 +111,7 @@ namespace pyublas
           boost::is_same<T, unsigned char>::value))
     {
       return (sizeof(T) == PyArray_ITEMSIZE(ary)
-          && bool(boost::is_signed<T>::value) 
+          && bool(boost::is_signed<T>::value)
           == bool(PyArray_ISSIGNED(ary)));
     }
     else
@@ -166,8 +166,8 @@ namespace pyublas
       {
         m_numpy_array = boost::python::handle<>(
             PyArray_SimpleNew(
-              ndim_, 
-              const_cast<npy_intp *>(dims_), 
+              ndim_,
+              const_cast<npy_intp *>(dims_),
               get_typenum(T())));
       }
 
@@ -192,10 +192,10 @@ namespace pyublas
       }
 
       template<typename in_t>
-      numpy_array(in_t const& in, 
-          typename boost::enable_if<boost::is_class<in_t> >::type *dummy=0) 
+      numpy_array(in_t const& in,
+          typename boost::enable_if<boost::is_class<in_t> >::type *dummy=0)
       {
-        if (boost::size(in)) 
+        if (boost::size(in))
         {
           npy_intp dims[] = { boost::size (in) };
           m_numpy_array = boost::python::handle<>(
@@ -235,7 +235,7 @@ namespace pyublas
       }
 
     private:
-      void resize_internal (size_type new_size, value_type init, bool preserve = true) 
+      void resize_internal (size_type new_size, value_type init, bool preserve = true)
       {
         size_type old_size;
         if (m_numpy_array.get())
@@ -246,7 +246,7 @@ namespace pyublas
           old_size = 0;
         }
 
-        if (new_size != old_size) 
+        if (new_size != old_size)
         {
           npy_intp dims[] = { new_size };
           boost::python::handle<> new_array = boost::python::handle<>(
@@ -254,7 +254,7 @@ namespace pyublas
           pointer new_data = reinterpret_cast<T *>(
               PyArray_DATA(new_array.get()));
 
-          if (preserve) 
+          if (preserve)
           {
             std::copy(data(), data() + std::min(new_size, old_size), new_data);
             std::fill(new_data + std::min(new_size, old_size), new_data + new_size, init);
@@ -265,17 +265,17 @@ namespace pyublas
       }
 
     public:
-      void resize (size_type size) 
+      void resize (size_type size)
       {
         resize_internal (size, value_type(), false);
       }
-      void resize (size_type size, value_type init) 
+      void resize (size_type size, value_type init)
       {
         resize_internal (size, init, true);
       }
 
-      size_type size() const 
-      { 
+      size_type size() const
+      {
         if (!is_valid())
           return 0;
 
@@ -290,15 +290,15 @@ namespace pyublas
       // metadata
       bool is_valid() const
       { return m_numpy_array.get(); }
-      size_type ndim() const 
+      size_type ndim() const
       { return PyArray_NDIM(m_numpy_array.get()); }
-      const npy_intp *dims() const 
+      const npy_intp *dims() const
       { return PyArray_DIMS(m_numpy_array.get()); }
-      const npy_intp dim(npy_intp i) const 
+      const npy_intp dim(npy_intp i) const
       { return PyArray_DIM(m_numpy_array.get(), i); }
-      const npy_intp *strides() const 
+      const npy_intp *strides() const
       { return PyArray_STRIDES(m_numpy_array.get()); }
-      const npy_intp stride(npy_intp i) const 
+      const npy_intp stride(npy_intp i) const
       { return PyArray_STRIDE(m_numpy_array.get(), i); }
 
       npy_intp itemsize() const
@@ -307,7 +307,7 @@ namespace pyublas
       { return PyArray_ISWRITEABLE(m_numpy_array.get()); }
 
       // shape manipulation
-      void reshape(int ndim_, const npy_intp *dims_, 
+      void reshape(int ndim_, const npy_intp *dims_,
           NPY_ORDER order=NPY_CORDER)
       {
         PyArray_Dims d = { const_cast<npy_intp *>(dims_), ndim_ };
@@ -330,39 +330,39 @@ namespace pyublas
       }
 
       // Element access
-      const_reference operator [] (size_type i) const 
+      const_reference operator [] (size_type i) const
       {
         BOOST_UBLAS_CHECK(i < size(), boost::numeric::ublas::bad_index());
         return begin()[i];
       }
 
-      reference operator [] (size_type i) 
+      reference operator [] (size_type i)
       {
         BOOST_UBLAS_CHECK(i < size(), boost::numeric::ublas::bad_index());
         return begin()[i];
       }
 
       // Assignment
-      numpy_array &operator=(const numpy_array &a) 
+      numpy_array &operator=(const numpy_array &a)
       {
         m_numpy_array = a.m_numpy_array;
         return *this;
       }
 
-      numpy_array &assign_temporary(numpy_array &a) 
+      numpy_array &assign_temporary(numpy_array &a)
       {
         m_numpy_array = a.m_numpy_array;
         return *this;
       }
 
         // Swapping
-      void swap (numpy_array &a) 
+      void swap (numpy_array &a)
       {
         if (this != &a)
           std::swap(m_numpy_array, a.m_numpy_array);
       }
 
-      friend void swap(numpy_array &a1, numpy_array &a2) 
+      friend void swap(numpy_array &a1, numpy_array &a2)
       {
         a1.swap (a2);
       }
@@ -391,7 +391,7 @@ namespace pyublas
       }
 
     public:
-      const_iterator begin() const 
+      const_iterator begin() const
       {
         const_iterator result = data();
         for (unsigned i = 0; i < ndim(); ++i)
@@ -405,8 +405,8 @@ namespace pyublas
         return result;
       }
 
-      const_iterator end() const 
-      { 
+      const_iterator end() const
+      {
         const npy_intp mpsi = max_pos_stride_index();
 
         if (mpsi != -1)
@@ -420,14 +420,14 @@ namespace pyublas
 
       typedef pointer iterator;
 
-      iterator begin() 
+      iterator begin()
       {
         return const_cast<iterator>(
             const_cast<numpy_array const *>(this)->begin());
       }
 
-      iterator end() 
-      { 
+      iterator end()
+      {
         return const_cast<iterator>(
             const_cast<numpy_array const *>(this)->end());
       }
@@ -436,16 +436,16 @@ namespace pyublas
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
       typedef std::reverse_iterator<iterator> reverse_iterator;
 
-      const_reverse_iterator rbegin() const 
+      const_reverse_iterator rbegin() const
       { return const_reverse_iterator(end()); }
 
-      const_reverse_iterator rend() const 
+      const_reverse_iterator rend() const
       { return const_reverse_iterator(begin ()); }
 
-      reverse_iterator rbegin() 
+      reverse_iterator rbegin()
       { return reverse_iterator(end()); }
 
-      reverse_iterator rend () 
+      reverse_iterator rend ()
       { return reverse_iterator(begin()); }
 
       // Data accessor
@@ -486,7 +486,7 @@ namespace pyublas
     if (PyArray_NDIM(ary.handle().get()) != 2)
       throw std::runtime_error("ndarray->matrix converteee has dimension != 2");
 
-    if (PyArray_STRIDE(ary.handle().get(), 1) 
+    if (PyArray_STRIDE(ary.handle().get(), 1)
         == PyArray_ITEMSIZE(ary.handle().get()))
     {
       // row-major
@@ -495,7 +495,7 @@ namespace pyublas
       if (!PyArray_CHKFLAGS(ary.handle().get(), NPY_C_CONTIGUOUS))
         throw std::runtime_error("ndarray->matrix converteee is not C-contiguous");
     }
-    else if (PyArray_STRIDE(ary.handle().get(), 0) 
+    else if (PyArray_STRIDE(ary.handle().get(), 0)
         == PyArray_ITEMSIZE(ary.handle().get()))
     {
       // column-major
@@ -532,21 +532,21 @@ namespace pyublas
     if (is_row_major(typename mat_type::orientation_category()))
     {
       result = boost::python::handle<>(PyArray_New(
-          &PyArray_Type, 2, dims, 
-          get_typenum(typename mat_type::value_type()), 
-          /*strides*/0, 
+          &PyArray_Type, 2, dims,
+          get_typenum(typename mat_type::value_type()),
+          /*strides*/0,
           PyArray_DATA(orig_handle.get()),
-          /* ? */ 0, 
+          /* ? */ 0,
           NPY_CARRAY, NULL));
     }
     else
     {
       result = boost::python::handle<>(PyArray_New(
-          &PyArray_Type, 2, dims, 
-          get_typenum(typename mat_type::value_type()), 
-          /*strides*/0, 
+          &PyArray_Type, 2, dims,
+          get_typenum(typename mat_type::value_type()),
+          /*strides*/0,
           PyArray_DATA(orig_handle.get()),
-          /* ? */ 0, 
+          /* ? */ 0,
           NPY_FARRAY, NULL));
     }
 
@@ -574,81 +574,81 @@ namespace pyublas
       }
 
       // numpy array metadata
-      bool is_valid() const 
+      bool is_valid() const
       { return static_cast<const Derived *>(this)->array().is_valid(); }
-      typename Super::size_type ndim() const 
+      typename Super::size_type ndim() const
       { return static_cast<const Derived *>(this)->array().ndim(); }
-      const npy_intp *dims() const 
+      const npy_intp *dims() const
       { return static_cast<const Derived *>(this)->array().dims(); }
-      const npy_intp dim(npy_intp i) const 
+      const npy_intp dim(npy_intp i) const
       { return static_cast<const Derived *>(this)->array().dim(i); }
-      const npy_intp *strides() const 
+      const npy_intp *strides() const
       { return static_cast<const Derived *>(this)->array().strides(); }
-      const npy_intp stride(npy_intp i) const 
+      const npy_intp stride(npy_intp i) const
       { return static_cast<const Derived *>(this)->array().stride(i); }
       npy_intp itemsize() const
       { return sizeof(typename Derived::value_type); }
-      bool writable() const 
+      bool writable() const
       { return static_cast<const Derived *>(this)->array().writable(); }
 
       // several-d subscripts
-      typename Super::value_type &sub(npy_intp i) 
+      typename Super::value_type &sub(npy_intp i)
       { return *reinterpret_cast<typename Super::value_type *>(
           PyArray_GETPTR1(
-            static_cast<const Derived *>(this)->array().handle().get(), 
-            i)); 
+            static_cast<const Derived *>(this)->array().handle().get(),
+            i));
       }
       const typename Super::value_type &sub(npy_intp i) const
-      { 
+      {
         return *reinterpret_cast<const typename Super::value_type *>(
             PyArray_GETPTR1(
-              static_cast<const Derived *>(this)->data().handle().get(), 
-              i)); 
+              static_cast<const Derived *>(this)->data().handle().get(),
+              i));
       }
-      typename Super::value_type &sub(npy_intp i, npy_intp j) 
-      { 
+      typename Super::value_type &sub(npy_intp i, npy_intp j)
+      {
         return *reinterpret_cast<typename Super::value_type *>(
             PyArray_GETPTR2(
-              static_cast<const Derived *>(this)->array().handle().get(), 
-              i, j)); 
+              static_cast<const Derived *>(this)->array().handle().get(),
+              i, j));
       }
       const typename Super::value_type &sub(npy_intp i, npy_intp j) const
-      { 
+      {
         return *reinterpret_cast<const typename Super::value_type *>(
             PyArray_GETPTR2(
-              static_cast<const Derived *>(this)->array().handle().get(), 
-              i, j)); 
+              static_cast<const Derived *>(this)->array().handle().get(),
+              i, j));
       }
-      typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k) 
-      { 
+      typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k)
+      {
         return *reinterpret_cast<typename Super::value_type *>(
             PyArray_GETPTR3(
-              static_cast<const Derived *>(this)->array().handle().get(), 
-              i, j, k)); 
+              static_cast<const Derived *>(this)->array().handle().get(),
+              i, j, k));
       }
       const typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k) const
-      { 
+      {
         return *reinterpret_cast<const typename Super::value_type *>(
             PyArray_GETPTR3(
-              static_cast<const Derived *>(this)->array().handle().get(), 
-              i, j, k)); 
+              static_cast<const Derived *>(this)->array().handle().get(),
+              i, j, k));
       }
-      typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) 
-      { 
+      typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l)
+      {
         return *reinterpret_cast<typename Super::value_type *>(
             PyArray_GETPTR4(
-              static_cast<const Derived *>(this)->array().handle().get(), 
-              i, j, k, l)); 
+              static_cast<const Derived *>(this)->array().handle().get(),
+              i, j, k, l));
       }
       const typename Super::value_type &sub(npy_intp i, npy_intp j, npy_intp k, npy_intp l) const
-      { 
+      {
         return *reinterpret_cast<const typename Super::value_type *>(
           PyArray_GETPTR4(
-            static_cast<const Derived *>(this)->array().handle().get(), 
-            i, j, k, l)); 
+            static_cast<const Derived *>(this)->array().handle().get(),
+            i, j, k, l));
       }
 
-      // shape manipulation 
+      // shape manipulation
       void reshape(int ndim_, const npy_intp *dims_, NPY_ORDER order=NPY_CORDER)
       {
         static_cast<Derived *>(this)->data().reshape(ndim_, dims_, order);
@@ -668,13 +668,13 @@ namespace pyublas
     {
       private:
         typedef  boost::iterator_facade<numpy_vec_iterator, T,
-                 boost::numeric::ublas::dense_random_access_iterator_tag> 
+                 boost::numeric::ublas::dense_random_access_iterator_tag>
                    self_t;
 
       public:
         typedef typename self_t::difference_type difference_type;
 
-        numpy_vec_iterator() 
+        numpy_vec_iterator()
         : it(0)
         { }
 
@@ -685,24 +685,24 @@ namespace pyublas
         // private:
         friend class boost::iterator_core_access;
 
-        bool equal(numpy_vec_iterator const &other) const 
+        bool equal(numpy_vec_iterator const &other) const
         {
           return other.it == this->it;
         }
 
-        void increment() 
+        void increment()
         { ++it; }
 
-        T& dereference() const 
+        T& dereference() const
         { return *it; }
 
-        void decrement() 
+        void decrement()
         { --it; }
 
-        difference_type distance_to (numpy_vec_iterator const &other) const 
+        difference_type distance_to (numpy_vec_iterator const &other) const
         { return (other.it - this->it);}
 
-        void advance (difference_type n) 
+        void advance (difference_type n)
         { it += n; }
 
         T* it;
@@ -715,22 +715,22 @@ namespace pyublas
   template <class T>
   class numpy_vector
   : public boost::numeric::ublas::vector<T, numpy_array<T> >,
-  public detail::vector_functionality<numpy_vector<T>,  
+  public detail::vector_functionality<numpy_vector<T>,
   boost::numeric::ublas::vector<T, numpy_array<T> > >
   {
     private:
-      typedef 
+      typedef
         boost::numeric::ublas::vector<T, numpy_array<T> >
         super;
-      typedef 
-        detail::vector_functionality<numpy_vector<T>,  
-          boost::numeric::ublas::vector<T, numpy_array<T> > 
+      typedef
+        detail::vector_functionality<numpy_vector<T>,
+          boost::numeric::ublas::vector<T, numpy_array<T> >
         >
         func;
 
     public:
       numpy_vector ()
-	: super(0)
+        : super(0)
       { }
 
       // observe that PyObject handles are implicitly convertible
@@ -740,28 +740,28 @@ namespace pyublas
       { }
 
       numpy_vector(int ndim_, const npy_intp *dims_)
-        : super(size_from_dims(ndim_, dims_), 
+        : super(size_from_dims(ndim_, dims_),
             numpy_array<T>(ndim_, dims_))
       { }
 
       template<class AE>
-      numpy_vector(int ndim_, const npy_intp *dims_, 
+      numpy_vector(int ndim_, const npy_intp *dims_,
           const boost::numeric::ublas::vector_expression<AE> &ae)
         : super(ae)
-      { 
+      {
         assert(this->size() == size_from_dims(ndim_, dims_));
         array().reshape(ndim_, dims_);
       }
 
-      explicit 
+      explicit
       numpy_vector(typename super::size_type size)
-      : super(size) 
+      : super(size)
       { }
 
       numpy_vector(
-          typename super::size_type size, 
+          typename super::size_type size,
           const typename super::value_type &init)
-        : super(size, init) 
+        : super(size, init)
       { }
 
       numpy_vector (const numpy_vector &v)
@@ -774,7 +774,7 @@ namespace pyublas
       { }
 
       // as-ublas accessor
-      super &as_ublas() 
+      super &as_ublas()
       { return *this; }
 
       const super &as_ublas() const
@@ -798,7 +798,7 @@ namespace pyublas
         else if (this->ndim() == 0)
           return boost::numeric::ublas::slice(0, 1, 1);
         else
-          PYUBLAS_PYERROR(ValueError, 
+          PYUBLAS_PYERROR(ValueError,
               "cannot generate a stride-respecting 1D slice "
               "for 2D or higher arrays");
       }
@@ -820,20 +820,20 @@ namespace pyublas
 
       numpy_array<T> const &array() const
       { return super::data(); }
- 
+
       typedef detail::numpy_vec_iterator<T> iterator;
       typedef detail::numpy_vec_iterator<const T> const_iterator;
 
-      iterator begin() 
+      iterator begin()
       { return iterator(array().begin()); }
 
-      iterator end() 
+      iterator end()
       { return iterator(array().end()); }
 
-      const_iterator begin() const 
+      const_iterator begin() const
       { return const_iterator(array().begin()); }
 
-      const_iterator end() const 
+      const_iterator end() const
       { return const_iterator(array().end()); }
 
   };
@@ -841,9 +841,9 @@ namespace pyublas
 
   namespace detail
   {
-    /* This is dumb, but necessary: In numpy_strided_vector, the 
-     * vector needs to be initialized before the slice referring 
-     * to it. But if the vector is a member, and the slice is a 
+    /* This is dumb, but necessary: In numpy_strided_vector, the
+     * vector needs to be initialized before the slice referring
+     * to it. But if the vector is a member, and the slice is a
      * base class, that won't happen. Therefore, move the vector
      * to an artificial base class that can be specified first in
      * the base-specifier-list. (cf. 12.6.2.5 in '96 working paper)
@@ -853,7 +853,7 @@ namespace pyublas
     {
       public:
                V m_vector;
-       
+
         vector_holder(const V &v)
           : m_vector(v)
         { }
@@ -863,7 +863,7 @@ namespace pyublas
 
 
     template<typename T>
-    class numpy_strided_vec_iterator 
+    class numpy_strided_vec_iterator
     : public boost::iterator_facade<
       numpy_strided_vec_iterator<T>, T,
       boost::numeric::ublas::dense_random_access_iterator_tag>
@@ -886,23 +886,23 @@ namespace pyublas
 
         friend class boost::iterator_core_access;
 
-        bool equal (numpy_strided_vec_iterator const& other) const 
+        bool equal (numpy_strided_vec_iterator const& other) const
         { return other.it == this->it; }
 
-        void increment() 
+        void increment()
         { it += stride; }
 
-        T& dereference() const 
+        T& dereference() const
         { return *it; }
 
-        void decrement() 
+        void decrement()
         { it -= stride; }
 
         difference_type
-        distance_to (numpy_strided_vec_iterator const& other) const 
+        distance_to (numpy_strided_vec_iterator const& other) const
         { return (other.it - this->it)/difference_type (stride);}
 
-        void advance (difference_type n) 
+        void advance (difference_type n)
         { it += n*stride; }
 
       private:
@@ -912,7 +912,7 @@ namespace pyublas
   } // end namespace detail
 
 
-       
+
 
   template <class T>
   class numpy_strided_vector
@@ -922,10 +922,10 @@ namespace pyublas
     boost::numeric::ublas::vector_slice< numpy_vector<T> > >
   {
     private:
-      typedef 
+      typedef
         detail::vector_holder<numpy_vector<T> >
         vector_holder;
-      typedef 
+      typedef
         boost::numeric::ublas::vector_slice< numpy_vector<T> >
         super;
 
@@ -933,7 +933,7 @@ namespace pyublas
       static numpy_array<T> make_fake_array() { return numpy_array<T>(0); }
 
     public:
-      numpy_strided_vector() 
+      numpy_strided_vector()
         : vector_holder (make_fake_array()),
         super(this->m_vector, boost::numeric::ublas::slice(0, 1, this->m_vector.size()))
       { }
@@ -962,7 +962,7 @@ namespace pyublas
       { }
 
       // as-ublas accessor
-      super &as_ublas() 
+      super &as_ublas()
       { return *this; }
 
       const super &as_ublas() const
@@ -970,7 +970,7 @@ namespace pyublas
 
       numpy_array<T> &array()
       { return this->m_vector.data(); }
-       
+
       numpy_array<T> const &array() const
       { return this->m_vector.data(); }
 
@@ -985,36 +985,36 @@ namespace pyublas
       typedef detail::numpy_strided_vec_iterator<T> iterator;
       typedef detail::numpy_strided_vec_iterator<const T> const_iterator;
 
-      iterator begin() 
-      { 
-        if (stride() >= 0)
-          return iterator(this->m_vector.array().begin(), stride()); 
-        else
-          return iterator(this->m_vector.array().end()-1, stride()); 
-      }
-
-      iterator end() 
+      iterator begin()
       {
         if (stride() >= 0)
-          return iterator(this->m_vector.array().end(), stride()); 
+          return iterator(this->m_vector.array().begin(), stride());
         else
-          return iterator(this->m_vector.array().end() - 1 - this->size(), stride()); 
+          return iterator(this->m_vector.array().end()-1, stride());
       }
 
-      const_iterator begin() const 
-      { 
-        if (stride() >= 0)
-          return const_iterator(this->m_vector.array().begin(), stride()); 
-        else
-          return const_iterator(this->m_vector.array().end()-1, stride()); 
-      }
-
-      const_iterator end() const 
+      iterator end()
       {
         if (stride() >= 0)
-          return const_iterator(this->m_vector.array().end(), stride()); 
+          return iterator(this->m_vector.array().end(), stride());
         else
-          return const_iterator(this->m_vector.array().end() - 1 - this->size(), stride()); 
+          return iterator(this->m_vector.array().end() - 1 - this->size(), stride());
+      }
+
+      const_iterator begin() const
+      {
+        if (stride() >= 0)
+          return const_iterator(this->m_vector.array().begin(), stride());
+        else
+          return const_iterator(this->m_vector.array().end()-1, stride());
+      }
+
+      const_iterator end() const
+      {
+        if (stride() >= 0)
+          return const_iterator(this->m_vector.array().end(), stride());
+        else
+          return const_iterator(this->m_vector.array().end() - 1 - this->size(), stride());
       }
   };
 
@@ -1022,13 +1022,13 @@ namespace pyublas
 
 
   // derived matrix types -----------------------------------------------------
-  template<class T, class L/* = boost::numeric::ublas::row_major */> 
+  template<class T, class L/* = boost::numeric::ublas::row_major */>
     /* default arg declared in forward decl */
   class numpy_matrix
-  : public boost::numeric::ublas::matrix<T, L, numpy_array<T> > 
+  : public boost::numeric::ublas::matrix<T, L, numpy_array<T> >
   {
     private:
-      typedef 
+      typedef
         boost::numeric::ublas::matrix<T, L, numpy_array<T> >
         super;
 
@@ -1037,21 +1037,21 @@ namespace pyublas
       { }
 
       numpy_matrix(
-          typename super::size_type size1, 
+          typename super::size_type size1,
           typename super::size_type size2)
       : super(size1, size2)
       { }
 
       numpy_matrix(
-          typename super::size_type size1, 
-          typename super::size_type size2, 
+          typename super::size_type size1,
+          typename super::size_type size2,
           const typename super::value_type &init)
       : super(size1, size2, init)
       { }
 
       numpy_matrix(
-          typename super::size_type size1, 
-          typename super::size_type size2, 
+          typename super::size_type size1,
+          typename super::size_type size2,
           const typename super::array_type &data)
       : super(size1, size2, data)
       { }
@@ -1061,7 +1061,7 @@ namespace pyublas
       numpy_matrix(const typename super::array_type &data)
       : super(
           get_array_size1<typename super::orientation_category>(data),
-          get_array_size2(data), 
+          get_array_size2(data),
           data)
       { }
 
@@ -1080,7 +1080,7 @@ namespace pyublas
         return numpy_matrix(super::data().copy());
       }
 
-      super &as_ublas() 
+      super &as_ublas()
       { return *this; }
 
       const super &as_ublas() const
@@ -1135,7 +1135,7 @@ namespace pyublas
 
   // data member treatment ----------------------------------------------------
   template <class T, class C>
-  class by_value_rw_member_visitor 
+  class by_value_rw_member_visitor
   : public boost::python::def_visitor<by_value_rw_member_visitor<T, C> >
   {
     private:
@@ -1151,10 +1151,10 @@ namespace pyublas
       template <class Class>
       void visit(Class& cl) const
       {
-        cl.add_property(m_name, 
-            boost::python::make_getter(m_member, 
-              boost::python::return_value_policy<boost::python::return_by_value>()), 
-            boost::python::make_setter(m_member), 
+        cl.add_property(m_name,
+            boost::python::make_getter(m_member,
+              boost::python::return_value_policy<boost::python::return_by_value>()),
+            boost::python::make_setter(m_member),
             m_doc);
       }
   };
@@ -1167,7 +1167,7 @@ namespace pyublas
   }
 
   template <class T, class C>
-  class by_value_ro_member_visitor 
+  class by_value_ro_member_visitor
   : public boost::python::def_visitor<by_value_ro_member_visitor<T, C> >
   {
     private:
@@ -1183,9 +1183,9 @@ namespace pyublas
       template <class Class>
       void visit(Class& cl) const
       {
-        cl.add_property(m_name, 
-            make_getter(m_member, 
-              boost::python::return_value_policy<boost::python::return_by_value>()), 
+        cl.add_property(m_name,
+            make_getter(m_member,
+              boost::python::return_value_policy<boost::python::return_by_value>()),
             m_doc);
       }
   };
@@ -1211,22 +1211,22 @@ namespace pyublas
 
 namespace boost { namespace numeric { namespace bindings { namespace traits {
   template <typename T, typename V>
-  struct vector_detail_traits< pyublas::numpy_array<T>, V > 
-  : default_vector_traits< V, T > 
+  struct vector_detail_traits< pyublas::numpy_array<T>, V >
+  : default_vector_traits< V, T >
   {
 #ifndef BOOST_NUMERIC_BINDINGS_NO_SANITY_CHECK
-    BOOST_STATIC_ASSERT( 
-        (boost::is_same< pyublas::numpy_array<T>, 
+    BOOST_STATIC_ASSERT(
+        (boost::is_same< pyublas::numpy_array<T>,
          typename boost::remove_const<V>::type >::value) );
 #endif
 
-    typedef pyublas::numpy_array<T>                      identifier_type; 
+    typedef pyublas::numpy_array<T>                      identifier_type;
     typedef V                                            vector_type;
     typedef typename default_vector_traits<V,T>::pointer pointer;
 
     static pointer storage (vector_type& v) { return v.data(); }
-  }; 
-}}}}  
+  };
+}}}}
 
 #endif
 
