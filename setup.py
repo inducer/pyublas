@@ -108,6 +108,7 @@ def main():
               'Operating System :: MacOS :: MacOS X',
               'Operating System :: POSIX',
               'Programming Language :: Python',
+              'Programming Language :: Python :: 3',
               'Programming Language :: C++',
               'Topic :: Scientific/Engineering',
               'Topic :: Scientific/Engineering :: Mathematics',
