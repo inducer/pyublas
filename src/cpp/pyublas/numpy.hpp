@@ -46,11 +46,22 @@
 
 namespace
 {
-  static struct _pyublas_array_importer
+  static struct pyublas_array_importer
   {
-    _pyublas_array_importer()
+    static bool do_import_array()
     {
+#if PY_VERSION_HEX >= 0x03000000
+      import_array1(false);
+#else
       import_array();
+#endif
+      return true;
+    }
+
+    pyublas_array_importer()
+    {
+      if (!do_import_array())
+        throw std::runtime_error("numpy failed to initialize");
     }
   } _array_importer;
 }

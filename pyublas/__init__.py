@@ -20,7 +20,7 @@ def _dtype_name(dtype):
     elif dtype in [numpy.complex128, numpy.complex, complex, numpy.dtype(numpy.complex128)]:
         return "Complex128"
     else:
-        raise RuntimeError, "Invalid dtype specified"
+        raise RuntimeError("Invalid dtype specified")
 
 
 
@@ -237,7 +237,7 @@ if has_sparse_wrappers():
         except AttributeError:
             # not handling a pylinear array--leave that to the general array
             # constructor.
-            raise ValueError, "asarray's first argument must be a PyUblas array"
+            raise ValueError("asarray's first argument must be a PyUblas array")
 
         if flavor is None:
             flavor = given_flavor
@@ -318,8 +318,8 @@ if has_sparse_wrappers():
         exception is raised.
         """
         if to_indices is not None and from_indices is not None:
-            raise ValueError, "only one of to_indices and from_indices may " \
-                    "be specified"
+            raise ValueError("only one of to_indices and from_indices may "
+                    "be specified")
 
         if to_indices is not None:
             if h is None:

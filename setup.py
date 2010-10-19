@@ -53,6 +53,12 @@ def main():
                 ]
         EXTRA_DEFINES["HAVE_SPARSE_WRAPPERS"] = 1
 
+    try:
+        from distutils.command.build_py import build_py_2to3 as build_py
+    except ImportError:
+        # 2.x
+        from distutils.command.build_py import build_py
+
     setup(
             name="PyUblas",
             version="0.93.1",
@@ -89,7 +95,7 @@ def main():
             `PyUblasExt <http://mathema.tician.de/software/pyublas/pyublasext>`_ 
             page.
             """,
-            author=u"Andreas Kloeckner",
+            author="Andreas Kloeckner",
             author_email="inform@tiker.net",
             license = "BSD",
             url="http://mathema.tician.de/software/pyublas",
@@ -125,7 +131,7 @@ def main():
                         include_dirs=INCLUDE_DIRS,
                         library_dirs=LIBRARY_DIRS,
                         libraries=LIBRARIES,
-                        define_macros=EXTRA_DEFINES.items(),
+                        define_macros=list(EXTRA_DEFINES.items()),
                         extra_compile_args=conf["CXXFLAGS"],
                         extra_link_args=conf["LDFLAGS"],
                         ),
@@ -134,13 +140,15 @@ def main():
                         include_dirs=INCLUDE_DIRS,
                         library_dirs=LIBRARY_DIRS,
                         libraries=LIBRARIES,
-                        define_macros=EXTRA_DEFINES.items(),
+                        define_macros=list(EXTRA_DEFINES.items()),
                         extra_compile_args=conf["CXXFLAGS"],
                         extra_link_args=conf["LDFLAGS"],
                         )
                     ],
             data_files=[("include/pyublas", glob.glob("src/cpp/pyublas/*.hpp"))],
-             )
+
+            # 2to3 invocation
+            cmdclass={'build_py': build_py})
 
 
 

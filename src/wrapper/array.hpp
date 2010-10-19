@@ -271,9 +271,26 @@ void translateIndex(PyObject *slice_or_constant, slice_info &si, int my_length)
           my_length, &si.m_start, &si.m_end, &si.m_stride, &si.m_length) != 0)
       throw python::error_already_set();
   }
-  else if (PyInt_Check(slice_or_constant))
+  else 
   {
-    int index = PyInt_AS_LONG(slice_or_constant);
+    bool valid = false;
+    long index;
+#if PY_VERSION_HEX < 0x03000000
+    if (PyInt_Check(slice_or_constant))
+    {
+      index = PyInt_AS_LONG(slice_or_constant);
+      valid = true;
+    }
+#endif
+    if (!valid && PyLong_Check(slice_or_constant))
+    {
+      index = PyLong_AS_LONG(slice_or_constant);
+      valid = true;
+    }
+
+    if (!valid)
+      throw std::out_of_range("invalid index object");
+
     if (index < 0)
       index += my_length;
     if (index < 0)
@@ -285,8 +302,6 @@ void translateIndex(PyObject *slice_or_constant, slice_info &si, int my_length)
     si.m_stride = 1;
     si.m_length = 1;
   }
-  else
-    throw std::out_of_range("invalid index object");
 }
 
 

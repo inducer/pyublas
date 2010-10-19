@@ -1,3 +1,7 @@
+# NOTE: This Jamfile does not represent the officially supported
+# method of building PyUblas. It is supplied for information
+# purposes only and might be a bit out of date.
+
 import toolset : flags ;
 import feature ;
 
