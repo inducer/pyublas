@@ -114,7 +114,7 @@ python::object getPythonIndexTuple(const pyublas::minilist<T> &ml)
 // shape accessors ------------------------------------------------------------
 template <typename MatrixType>
 inline unsigned getLength(const MatrixType &m)
-{ 
+{
   return m.size1();
 }
 
@@ -123,7 +123,7 @@ inline unsigned getLength(const MatrixType &m)
 
 template <typename MatrixType>
 inline python::object getShape(const MatrixType &m)
-{ 
+{
   return getPythonShapeTuple(pyublas::getShape(m));
 }
 
@@ -132,7 +132,7 @@ inline python::object getShape(const MatrixType &m)
 
 template <typename MatrixType>
 inline void setShape(MatrixType &m, const python::tuple &new_shape)
-{ 
+{
   pyublas::setShape(m,getMinilist<typename MatrixType::size_type>(new_shape));
 }
 
@@ -213,7 +213,7 @@ struct python_matrix_value_iterator
 
 
 
-template <typename MatrixType> 
+template <typename MatrixType>
 struct python_matrix_value_iterator<MatrixType, mpl::true_>
 {
   const MatrixType                      &m_matrix;
@@ -267,11 +267,11 @@ void translateIndex(PyObject *slice_or_constant, slice_info &si, int my_length)
   si.m_was_slice = PySlice_Check(slice_or_constant);
   if (si.m_was_slice)
   {
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject *>(slice_or_constant), 
+    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject *>(slice_or_constant),
           my_length, &si.m_start, &si.m_end, &si.m_stride, &si.m_length) != 0)
       throw python::error_already_set();
   }
-  else 
+  else
   {
     bool valid = false;
     long index;
@@ -311,17 +311,17 @@ void translateIndex(PyObject *slice_or_constant, slice_info &si, int my_length)
 
 template <typename MatrixType>
 handle<> getElement(/*const*/ MatrixType &m, handle<> index)
-{ 
+{
   typedef
     pyublas::numpy_vector<typename MatrixType::value_type>
     vector_t;
   typedef
     typename MatrixType::value_type
     value_t;
-  typedef 
+  typedef
     ublas::basic_slice<typename MatrixType::size_type> slice_t;
 
-  
+
   if (PyTuple_Check(index.get()))
   {
     // we have a tuple
@@ -336,12 +336,12 @@ handle<> getElement(/*const*/ MatrixType &m, handle<> index)
       return pyublas::handle_from_rvalue(value_t(m(si1.m_start, si2.m_start)));
     else if (!si1.m_was_slice)
       return pyublas::handle_from_new_ptr(new vector_t(
-            ublas::matrix_vector_slice<MatrixType>(m, 
+            ublas::matrix_vector_slice<MatrixType>(m,
               slice_t(si1.m_start, 0,            si2.m_length),
               slice_t(si2.m_start, si2.m_stride, si2.m_length))));
     else if (!si2.m_was_slice)
       return pyublas::handle_from_new_ptr(new vector_t(
-                  ublas::matrix_vector_slice<MatrixType>(m, 
+                  ublas::matrix_vector_slice<MatrixType>(m,
                       slice_t(si1.m_start, si1.m_stride, si1.m_length),
                       slice_t(si2.m_start, 0,            si1.m_length))));
     else
@@ -375,15 +375,15 @@ handle<> getElement(/*const*/ MatrixType &m, handle<> index)
 
 template <typename MatrixType>
 void setElement(MatrixType &m, handle<> index, python::object &new_value)
-{ 
-  typedef 
+{
+  typedef
     pyublas::numpy_vector<typename MatrixType::value_type>
     vector_t;
-  typedef 
+  typedef
       typename MatrixType::value_type m_value_t;
-  typedef 
+  typedef
       typename MatrixType::size_type m_size_t;
-  typedef 
+  typedef
       ublas::basic_slice<m_size_t> slice_t;
 
 
@@ -403,7 +403,7 @@ void setElement(MatrixType &m, handle<> index, python::object &new_value)
 
     if (new_scalar.check())
     {
-      // scalar broadcast 
+      // scalar broadcast
       subslice(m,
             si1.m_start, si1.m_stride, si1.m_length,
             si2.m_start, si2.m_stride, si2.m_length) =
@@ -414,7 +414,7 @@ void setElement(MatrixType &m, handle<> index, python::object &new_value)
       const vector_t &new_vec(new_vector());
       if (si1.m_length == 1)
       {
-	// replace row
+        // replace row
         if (new_vec.size() != si2.m_length)
           PYUBLAS_PYERROR(ValueError, "submatrix is wrong size for assignment");
 
@@ -424,7 +424,7 @@ void setElement(MatrixType &m, handle<> index, python::object &new_value)
       }
       else if (si2.m_length == 1)
       {
-	// replace column
+        // replace column
         if (new_vector().size() != si1.m_length)
           PYUBLAS_PYERROR(ValueError, "submatrix is wrong size for assignment");
 
@@ -450,7 +450,7 @@ void setElement(MatrixType &m, handle<> index, python::object &new_value)
     {
       // no broadcast
       const MatrixType &new_mat = new_matrix();
-      if (int(new_mat.size1()) != si1.m_length || 
+      if (int(new_mat.size1()) != si1.m_length ||
           int(new_mat.size2()) != si2.m_length)
         PYUBLAS_PYERROR(ValueError, "submatrix is wrong size for assignment");
 
@@ -469,7 +469,7 @@ void setElement(MatrixType &m, handle<> index, python::object &new_value)
     if (new_scalar.check())
       subslice(m,
           si.m_start, si.m_stride, si.m_length,
-          0, 1, m.size2()) = 
+          0, 1, m.size2()) =
         ublas::scalar_matrix<m_value_t>(si.m_length, m.size2(), new_scalar());
     else if (new_vector.check())
     {
@@ -496,7 +496,7 @@ void setElement(MatrixType &m, handle<> index, python::object &new_value)
     {
       const MatrixType &new_mat = new_matrix();
 
-      if (int(new_mat.size1()) != si.m_length || 
+      if (int(new_mat.size1()) != si.m_length ||
           int(new_mat.size2()) != m.size2())
         PYUBLAS_PYERROR(ValueError, "submatrix is wrong size for assignment");
 
@@ -533,12 +533,12 @@ struct sparse_pickle_suite : python::pickle_suite
     pyublas::matrix_iterator<MatrixType>
       first = pyublas::begin(m),
       last = pyublas::end(m);
-    
+
     python::list result;
     while (first != last)
     {
       result.append(python::make_tuple(getPythonIndexTuple(first.index()),
-				       typename MatrixType::value_type(*first)));
+                                       typename MatrixType::value_type(*first)));
       first++;
     }
 
@@ -548,7 +548,7 @@ struct sparse_pickle_suite : python::pickle_suite
 
 
 
-  static 
+  static
   void
   setstate(MatrixType &m, python::object entries)
   {
@@ -607,8 +607,8 @@ handle<> transpose_matrix(const MatrixType &m)
 template <typename MatrixType>
 struct realWrapper
 {
-  typedef 
-    typename change_value_type<MatrixType, 
+  typedef
+    typename change_value_type<MatrixType,
       typename decomplexify<typename MatrixType::value_type>::type>::type
     result_type;
 
@@ -624,8 +624,8 @@ struct realWrapper
 template <typename MatrixType>
 struct imagWrapper
 {
-  typedef 
-    typename change_value_type<MatrixType, 
+  typedef
+    typename change_value_type<MatrixType,
       typename decomplexify<typename MatrixType::value_type>::type>::type
     result_type;
 
@@ -656,7 +656,7 @@ struct add_element_inplace_helper
   typedef typename MatrixType::size_type size_type;
   typedef typename MatrixType::value_type value_type;
 
-  void operator()(MatrixType &mat, 
+  void operator()(MatrixType &mat,
     size_type i,
     size_type j,
     value_type x)
@@ -671,7 +671,7 @@ struct add_element_inplace_helper<ublas::coordinate_matrix<V, ublas::column_majo
   typedef unsigned int size_type;
   typedef V value_type;
 
-  void operator()(ublas::coordinate_matrix<V, ublas::column_major> &mat, 
+  void operator()(ublas::coordinate_matrix<V, ublas::column_major> &mat,
     size_type i,
     size_type j,
     value_type x)
@@ -685,7 +685,7 @@ struct add_element_inplace_helper<ublas::coordinate_matrix<V, ublas::column_majo
 
 template <typename MatrixType>
 inline
-void add_element_inplace(MatrixType &mat, 
+void add_element_inplace(MatrixType &mat,
     typename add_element_inplace_helper<MatrixType>::size_type i,
     typename add_element_inplace_helper<MatrixType>::size_type j,
     typename add_element_inplace_helper<MatrixType>::value_type x)
@@ -697,7 +697,7 @@ void add_element_inplace(MatrixType &mat,
 
 
 template <typename MatrixType, typename SmallMatrixType>
-void add_block(MatrixType &mat, 
+void add_block(MatrixType &mat,
     typename MatrixType::size_type start_row,
     typename MatrixType::size_type start_column,
     const SmallMatrixType &small_mat)
@@ -711,9 +711,9 @@ void add_block(MatrixType &mat,
   while (first != last)
   {
     const pyublas::minilist<index_t> index = first.index();
-    add_element_inplace(mat, 
-        start_row+index[0], 
-        start_column+index[1], 
+    add_element_inplace(mat,
+        start_row+index[0],
+        start_column+index[1],
         *first++);
   }
 }
@@ -722,8 +722,8 @@ void add_block(MatrixType &mat,
 
 
 template <typename MatrixType, typename SmallMatrixType>
-void add_scattered(MatrixType &mat, 
-    python::object row_indices_py, 
+void add_scattered(MatrixType &mat,
+    python::object row_indices_py,
     python::object column_indices_py,
     const SmallMatrixType &small_mat)
 {
@@ -752,9 +752,9 @@ void add_scattered(MatrixType &mat,
   while (first != last)
   {
     const pyublas::minilist<index_t> index = first.index();
-    add_element_inplace(mat, 
-        row_indices[index[0]], 
-        column_indices[index[1]], 
+    add_element_inplace(mat,
+        row_indices[index[0]],
+        column_indices[index[1]],
         *first++);
   }
 }
@@ -763,8 +763,8 @@ void add_scattered(MatrixType &mat,
 
 
 template <typename MatrixType, typename SmallMatrixType>
-void add_scattered_with_skip(MatrixType &mat, 
-    python::object row_indices_py, 
+void add_scattered_with_skip(MatrixType &mat,
+    python::object row_indices_py,
     python::object column_indices_py,
     const SmallMatrixType &small_mat)
 {
@@ -812,7 +812,7 @@ sum(MatrixType &mat)
   pyublas::matrix_iterator<MatrixType>
     first = pyublas::begin(mat),
     last = pyublas::end(mat);
-    
+
   typename MatrixType::value_type result = 0;
   while (first != last)
     result += *first++;
@@ -829,9 +829,9 @@ abs_square_sum(MatrixType &mat)
   pyublas::matrix_iterator<MatrixType>
     first = pyublas::begin(mat),
     last = pyublas::end(mat);
-    
-  typedef 
-    typename helpers::decomplexify<typename MatrixType::value_type>::type 
+
+  typedef
+    typename helpers::decomplexify<typename MatrixType::value_type>::type
     real_type;
   real_type result = 0;
   while (first != last)
@@ -848,19 +848,19 @@ void exposeElementWiseBehavior(PythonClass &pyclass, WrappedClass)
   typedef WrappedClass cl;
   typedef typename cl::value_type value_type;
   pyclass
-    .def("copy", copyNew<cl>, 
+    .def("copy", copyNew<cl>,
         python::return_value_policy<python::manage_new_object>(),
         "Return an exact copy of the given Array.")
     .def("clear", &cl::clear,
         "Discard Array content and fill with zeros, if necessary.")
 
     .add_property(
-      "shape", 
-      (python::object (*)(const cl &)) getShape, 
+      "shape",
+      (python::object (*)(const cl &)) getShape,
       (void (*)(cl &, const python::tuple &)) setShape,
       "Return a shape tuple for the Array.")
     .add_property(
-      "__array_shape__", 
+      "__array_shape__",
       (python::object (*)(const cl &)) getShape)
     .def("__len__", (unsigned (*)(const cl &)) getLength,
         "Return the length of the leading dimension of the Array.")
@@ -894,11 +894,11 @@ void exposeElementWiseBehavior(PythonClass &pyclass, WrappedClass)
 template <typename PythonClass, typename WrappedClass>
 void expose_iterator(PythonClass &pyclass, const std::string &python_typename, WrappedClass)
 {
-  typedef 
+  typedef
     python_matrix_value_iterator<WrappedClass>
     value_iterator;
 
-  typedef 
+  typedef
     python_matrix_key_iterator<WrappedClass>
     key_iterator;
 
@@ -933,8 +933,8 @@ void expose_iterator(PythonClass &pyclass, const std::string &python_typename, W
 // matrix wrapper -------------------------------------------------------------
 template <typename MatrixType>
 handle<> multiply_matrix_base(
-    const MatrixType &mat, 
-    python::object op2, 
+    const MatrixType &mat,
+    python::object op2,
     bool reverse)
 {
   python::extract<MatrixType> op2_mat(op2);
@@ -1031,7 +1031,7 @@ handle<> multiply_matrix_inplace(python::object op1, python::object op2)
 
 
 template <typename MatrixType>
-void matrixSimplePushBack(MatrixType &m, 
+void matrixSimplePushBack(MatrixType &m,
                           typename MatrixType::size_type i,
                           typename MatrixType::size_type j,
                           const typename MatrixType::value_type &el)
@@ -1043,7 +1043,7 @@ void matrixSimplePushBack(MatrixType &m,
 
 
 template <typename MatrixType>
-void matrixSimpleAppendElement(MatrixType &m, 
+void matrixSimpleAppendElement(MatrixType &m,
                                typename MatrixType::size_type i,
                                typename MatrixType::size_type j,
                                const typename MatrixType::value_type &el)
@@ -1055,7 +1055,7 @@ void matrixSimpleAppendElement(MatrixType &m,
 
 
 template <typename MatrixType>
-void insertElementWrapper(MatrixType &m, 
+void insertElementWrapper(MatrixType &m,
                    typename MatrixType::size_type i,
                    typename MatrixType::size_type j,
                    const typename MatrixType::value_type &el)
@@ -1153,7 +1153,7 @@ void expose_matrix_specialties(PYC &pyclass, ublas::compressed_matrix<VT, L, IB,
         "Fill up index data of compressed row storage.")
     .def("set_element_past_end", &cl::push_back,
         "(i,j,x) Set a[i,j] = x assuming no element before i,j in lexical ordering.")
-    .add_property("nnz", &cl::nnz, 
+    .add_property("nnz", &cl::nnz,
         "The number of structural nonzeros in the matrix")
     ;
 
@@ -1180,14 +1180,14 @@ void expose_matrix_specialties(PYC &pyclass, ublas::coordinate_matrix<VT, L, IB,
         "(i,j,x) Set a[i,j] = x assuming no element before i,j in lexical ordering.")
     .def("add_element", &cl::append_element,
         "(i,j,x) Set a[i,j] += x.")
-    .add_property("nnz", &cl::nnz, 
+    .add_property("nnz", &cl::nnz,
         "The number of structural nonzeros in the matrix")
     ;
 
   expose_add_scattered<cl, pyublas::numpy_matrix<VT> >(pyclass);
   expose_add_scattered<cl, cl >(pyclass);
-  expose_add_scattered<cl, 
-    ublas::compressed_matrix<VT, ublas::column_major, 0, 
+  expose_add_scattered<cl,
+    ublas::compressed_matrix<VT, ublas::column_major, 0,
     ublas::unbounded_array<int> > >(pyclass);
 
   pyclass
@@ -1207,13 +1207,13 @@ void expose_matrix_type(WrappedClass, const std::string &python_typename, const 
   wrapper_class pyclass(total_typename.c_str());
 
   pyclass
-    .def(python::init<typename WrappedClass::size_type, 
+    .def(python::init<typename WrappedClass::size_type,
         typename WrappedClass::size_type>())
     ;
 
   exposeMatrixConcept(pyclass, WrappedClass());
   expose_iterator(pyclass, total_typename, WrappedClass());
-  exposeForMatricesConvertibleTo(matrix_converter_exposer<wrapper_class>(pyclass), 
+  exposeForMatricesConvertibleTo(matrix_converter_exposer<wrapper_class>(pyclass),
       typename WrappedClass::value_type());
   expose_matrix_specialties(pyclass, WrappedClass());
 }
