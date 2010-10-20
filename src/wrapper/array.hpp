@@ -284,7 +284,9 @@ void translateIndex(PyObject *slice_or_constant, slice_info &si, int my_length)
 #endif
     if (!valid && PyLong_Check(slice_or_constant))
     {
-      index = PyLong_AS_LONG(slice_or_constant);
+      index = PyLong_AsLong(slice_or_constant);
+      if (index == -1 && PyErr_Occurred())
+        throw python::error_already_set();
       valid = true;
     }
 
