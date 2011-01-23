@@ -44,7 +44,7 @@ namespace
   { return v.size(); }
 
 
-  
+
   template <class TargetType>
   struct array_converter_base
   {
@@ -52,7 +52,7 @@ namespace
     typedef TargetType target_type;
 
     static void construct(
-        PyObject* obj, 
+        PyObject* obj,
         py::converter::rvalue_from_python_stage1_data* data)
     {
       void* storage = ((py::converter::rvalue_from_python_storage<target_type>*)data)->storage.bytes;
@@ -64,7 +64,7 @@ namespace
     }
 
     static void construct_invalid_ok(
-        PyObject* obj, 
+        PyObject* obj,
         py::converter::rvalue_from_python_stage1_data* data)
     {
       typedef invalid_ok<target_type> inv_ok;
@@ -78,7 +78,7 @@ namespace
 
     template <class RealTgtType>
     static void construct_indirect(
-        PyObject* obj, 
+        PyObject* obj,
         py::converter::rvalue_from_python_stage1_data* data)
     {
       void* storage = ((py::converter::rvalue_from_python_storage<target_type>*)data)->storage.bytes;
@@ -119,7 +119,7 @@ namespace
 
     public:
       static void construct_strided(
-          PyObject* obj, 
+          PyObject* obj,
           py::converter::rvalue_from_python_stage1_data* data)
       {
         typedef numpy_strided_vector<typename super::value_type> strided_vec;
@@ -138,7 +138,7 @@ namespace
         if (!PyArray_Check(obj))
         {
           if (trace_conversion)
-            std::cerr 
+            std::cerr
               << boost::format("obj %1% rejected as vec: not a numpy array") % obj
               << std::endl;
           return 0;
@@ -147,7 +147,7 @@ namespace
         if (!is_storage_compatible<typename super::value_type>(obj))
         {
           if (trace_conversion)
-            std::cerr 
+            std::cerr
               << boost::format("obj %1% rejected as vec: not storage-compatible with %2%")
                   % obj % typeid(typename super::value_type).name()
               << std::endl;
@@ -170,7 +170,7 @@ namespace
       // needs to be overridden to copy strided version
       template <class RealTgtType>
       static void construct_indirect(
-          PyObject* obj, 
+          PyObject* obj,
           py::converter::rvalue_from_python_stage1_data* data)
       {
         void* storage = ((py::converter::rvalue_from_python_storage<
@@ -202,7 +202,7 @@ namespace
         if (!PyArray_Check(obj))
         {
           if (trace_conversion)
-            std::cerr 
+            std::cerr
               << boost::format("obj %1% rejected as mat: not a numpy array") % obj
               << std::endl;
           return 0;
@@ -211,7 +211,7 @@ namespace
         if (!is_storage_compatible<typename super::value_type>(obj))
         {
           if (trace_conversion)
-            std::cerr 
+            std::cerr
               << boost::format("obj %1% rejected as mat: not storage-compatible with %2%")
                   % obj % typeid(typename super::value_type).name()
               << std::endl;
@@ -222,7 +222,7 @@ namespace
         if (PyArray_NDIM(obj) != 2)
         {
           if (trace_conversion)
-            std::cerr 
+            std::cerr
               << boost::format("obj %1% rejected as mat: not 2-dimensional") % obj
               << std::endl;
           return 0;
@@ -234,7 +234,7 @@ namespace
           if (!is_row_major(typename MatrixType::orientation_category()))
           {
             if (trace_conversion)
-              std::cerr 
+              std::cerr
                 << boost::format("obj %1% rejected as mat: not row-major") % obj
                 << std::endl;
             return 0;
@@ -243,7 +243,7 @@ namespace
           if (!PyArray_CHKFLAGS(obj, NPY_C_CONTIGUOUS))
           {
             if (trace_conversion)
-              std::cerr 
+              std::cerr
                 << boost::format("obj %1% rejected as row-major mat: not C-contiguous") % obj
                 << std::endl;
             return 0;
@@ -254,7 +254,7 @@ namespace
           if (is_row_major(typename MatrixType::orientation_category()))
           {
             if (trace_conversion)
-              std::cerr 
+              std::cerr
                 << boost::format("obj %1% rejected as mat: not column-major") % obj
                 << std::endl;
             return 0;
@@ -263,7 +263,7 @@ namespace
           if (!PyArray_CHKFLAGS(obj, NPY_F_CONTIGUOUS))
           {
             if (trace_conversion)
-              std::cerr 
+              std::cerr
                 << boost::format("obj %1% rejected as column-major mat: not Fortran-contiguous") % obj
                 << std::endl;
             return 0;
@@ -273,7 +273,7 @@ namespace
         {
           // no dim has stride == 1
           if (trace_conversion)
-            std::cerr 
+            std::cerr
               << boost::format("obj %1% rejected as mat: no unit-size stride") % obj
               << std::endl;
           return 0;
@@ -363,22 +363,22 @@ namespace
   // array scalars ------------------------------------------------------------
   template <class T>
   const PyTypeObject *get_array_scalar_typeobj()
-  { 
-    return (PyTypeObject *) PyArray_TypeObjectFromType(get_typenum(T())); 
+  {
+    return (PyTypeObject *) PyArray_TypeObjectFromType(get_typenum(T()));
   }
 
   template <class T>
   void *check_array_scalar(PyObject *obj)
-  { 
+  {
     if (obj->ob_type == get_array_scalar_typeobj<T>())
-      return obj; 
+      return obj;
     else
       return 0;
   }
 
   template <class T>
   static void convert_array_scalar(
-      PyObject* obj, 
+      PyObject* obj,
       py::converter::rvalue_from_python_stage1_data* data)
   {
     void* storage = ((py::converter::rvalue_from_python_storage<T>*)data)->storage.bytes;
@@ -471,7 +471,7 @@ void pyublas_expose_converters()
   expose_converters<npy_double>();
   expose_converters<std::complex<float> >();
   expose_converters<std::complex<double> >();
-#if HAVE_LONG_DOUBLE		// defined in pyconfig.h
+#if HAVE_LONG_DOUBLE            // defined in pyconfig.h
   expose_converters<npy_longdouble>();
   expose_converters<std::complex<long double> >();
 #endif
