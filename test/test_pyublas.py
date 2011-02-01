@@ -152,7 +152,7 @@ def test_matrix_slice_inplace():
 
 def test_empty_and_resize():
     v = te.make_resized_vector(0)
-    assert v is None
+    assert v.shape == (0,)
 
     v = te.make_resized_vector(1)
     assert v.shape == (1,)
