@@ -82,13 +82,15 @@ namespace pyublas
   inline NPY_TYPES get_typenum(npy_ulonglong) { return NPY_ULONGLONG; }
   inline NPY_TYPES get_typenum(npy_float) { return NPY_FLOAT; }
   inline NPY_TYPES get_typenum(npy_double) { return NPY_DOUBLE; }
-  inline NPY_TYPES get_typenum(npy_longdouble) { return NPY_LONGDOUBLE; }
   inline NPY_TYPES get_typenum(npy_cfloat) { return NPY_CFLOAT; }
   inline NPY_TYPES get_typenum(npy_cdouble) { return NPY_CDOUBLE; }
-  inline NPY_TYPES get_typenum(npy_clongdouble) { return NPY_CLONGDOUBLE; }
   inline NPY_TYPES get_typenum(std::complex<float>) { return NPY_CFLOAT; }
   inline NPY_TYPES get_typenum(std::complex<double>) { return NPY_CDOUBLE; }
+#if HAVE_LONG_DOUBLE && (NPY_SIZEOF_LONGDOUBLE > NPY_SIZEOF_DOUBLE)
+  inline NPY_TYPES get_typenum(npy_longdouble) { return NPY_LONGDOUBLE; }
+  inline NPY_TYPES get_typenum(npy_clongdouble) { return NPY_CLONGDOUBLE; }
   inline NPY_TYPES get_typenum(std::complex<long double>) { return NPY_CLONGDOUBLE; }
+#endif
   inline NPY_TYPES get_typenum(boost::python::object) { return NPY_OBJECT; }
   inline NPY_TYPES get_typenum(boost::python::handle<>) { return NPY_OBJECT; }
   /* NPY_STRING, NPY_UNICODE unsupported for now */
