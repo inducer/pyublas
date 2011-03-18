@@ -19,6 +19,13 @@ Debugging Tools
 
         do_stuff(pyublas.why_not(myarray))
 
+.. function:: set_trace(enable)
+
+    If set to true, prints diagnostic messages upon each failed vector
+    conversion explaining what went wrong. (Note that each argument
+    may go through a number of failed conversions before the correct
+    one is found.)
+
 Sparse Matrix wrappers
 ----------------------
 
