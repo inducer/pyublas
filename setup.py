@@ -61,7 +61,7 @@ def main():
 
     setup(
             name="PyUblas",
-            version="0.93.1",
+            version="2011.1",
             description="Seamless Numpy-UBlas interoperability",
             long_description="""
             PyUblas provides a seamless glue layer between
