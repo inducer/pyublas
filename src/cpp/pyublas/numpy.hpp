@@ -830,6 +830,9 @@ namespace pyublas
       numpy_array<T> const &array() const
       { return super::data(); }
 
+      numpy_vector copy() const
+      { return numpy_vector(super::data().copy()); }
+
       typedef detail::numpy_vec_iterator<T> iterator;
       typedef detail::numpy_vec_iterator<const T> const_iterator;
 
