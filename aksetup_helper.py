@@ -5,6 +5,19 @@ distribute_setup.use_setuptools()
 import setuptools
 from setuptools import Extension
 
+def count_down_delay(delay):
+    from time import sleep
+    import sys
+    while delay:
+        sys.stdout.write("Continuing in %d seconds...   \r" % delay)
+        sys.stdout.flush()
+        delay -= 1
+        sleep(1)
+    print("")
+
+
+
+
 if not hasattr(setuptools, "_distribute"):
     print("-------------------------------------------------------------------------")
     print("Setuptools conflict detected.")
@@ -18,17 +31,11 @@ if not hasattr(setuptools, "_distribute"):
     print("http://wiki.tiker.net/DistributeVsSetuptools")
     print("-------------------------------------------------------------------------")
     print("I will continue after a short while, fingers crossed.")
+    print("Hit Ctrl-C now if you'd like to think about the situation.")
     print("-------------------------------------------------------------------------")
 
-    delay = 10
+    count_down_delay(delay=10)
 
-    from time import sleep
-    import sys
-    while delay:
-        sys.stdout.write("Continuing in %d seconds...   \r" % delay)
-        sys.stdout.flush()
-        delay -= 1
-        sleep(1)
 
 def setup(*args, **kwargs):
     from setuptools import setup
@@ -156,22 +163,14 @@ def get_config(schema=None, warn_about_no_config=True):
         print("*** HIT Ctrl-C NOW IF THIS IS NOT WHAT YOU WANT")
         print("*************************************************************")
 
-        delay = 10
+        count_down_delay(delay=10)
 
-        from time import sleep
-        import sys
-        while delay:
-            sys.stdout.write("Continuing in %d seconds...   \r" % delay)
-            sys.stdout.flush()
-            delay -= 1
-            sleep(1)
-
-    return schema.read_config()
+    return expand_options(schema.read_config())
 
 
 
 
-def hack_distutils(debug=False, fast_link=True):
+def hack_distutils(debug=False, fast_link=True, what_opt=3):
     # hack distutils.sysconfig to eliminate debug flags
     # stolen from mpi4py
 
@@ -195,8 +194,12 @@ def hack_distutils(debug=False, fast_link=True):
             if debug:
                 cflags.append("-g")
             else:
-                cflags.append("-O3")
-                cflags.append("-DNDEBUG")
+                if what_opt is None:
+                    pass
+                else:
+                    cflags.append("-O%s" % what_opt)
+                    cflags.append("-DNDEBUG")
+
             cvars['OPT'] = str.join(' ', cflags)
             cvars["CFLAGS"] = cvars["BASECFLAGS"] + " " + cvars["OPT"]
 
@@ -238,15 +241,23 @@ def expand_value(v, options):
     if isinstance(v, str):
         return expand_str(v, options)
     elif isinstance(v, list):
-        return [expand_value(i, options) for i in v]
+        result = []
+        for i in v:
+            try:
+                exp_i = expand_value(i, options)
+            except:
+                pass
+            else:
+                result.append(exp_i)
+
+        return result
     else:
         return v
 
 
 def expand_options(options):
-    for k in options.keys():
-        options[k] = expand_value(options[k], options)
-    return options
+    return dict(
+            (k, expand_value(v, options)) for k, v in options.items())
 
 
 
@@ -277,13 +288,18 @@ class ConfigSchema:
         self.conf_dir = conf_dir
 
     def get_default_config(self):
-        return dict((opt.name, opt.default)
-                for opt in self.options)
+        return dict((opt.name, opt.default) for opt in self.options)
 
     def read_config_from_pyfile(self, filename):
         result = {}
         filevars = {}
-        exec(compile(open(filename, "r").read(), filename, "exec"), filevars)
+        infile = open(filename, "r")
+        try:
+            contents = infile.read()
+        finally:
+            infile.close()
+
+        exec(compile(contents, filename, "exec"), filevars)
 
         for key, value in filevars.items():
             if key in self.optdict:
@@ -370,8 +386,6 @@ class ConfigSchema:
                     raise KeyError("invalid config key in %s: %s" % (
                             cfile, key))
 
-        expand_options(result)
-
         return result
 
     def add_to_configparser(self, parser, def_config=None):
@@ -386,11 +400,9 @@ class ConfigSchema:
         result = {}
         for opt in self.options:
             result[opt.name] = opt.take_from_configparser(options)
-        expand_options(result)
         return result
 
     def write_config(self, config):
-        import os
         outf = open(self.get_conf_file(), "w")
         for opt in self.options:
             value = config[opt.name]
@@ -453,13 +465,16 @@ class Switch(Option):
         if default is None:
             default = self.default
 
+        option_name = self.as_option()
+
         if default:
+            option_name = "no-" + option_name
             action = "store_false"
         else:
             action = "store_true"
 
         parser.add_option(
-            "--" + self.as_option(),
+            "--" + option_name,
             dest=self.name,
             help=self.get_help(default),
             default=default,
@@ -507,11 +522,11 @@ class Libraries(StringListOption):
 class BoostLibraries(Libraries):
     def __init__(self, lib_base_name):
         Libraries.__init__(self, "BOOST_%s" % lib_base_name.upper(),
-                ["boost_%s-${BOOST_COMPILER}-mt" % lib_base_name],
+                ["boost_%s" % lib_base_name],
                 help="Library names for Boost C++ %s library (without lib or .so)"
                     % humanize(lib_base_name))
 
-def set_up_shipped_boost_if_requested(conf):
+def set_up_shipped_boost_if_requested(project_name, conf):
     """Set up the package to use a shipped version of Boost.
 
     Return a tuple of a list of extra C files to build and extra
@@ -540,15 +555,7 @@ def set_up_shipped_boost_if_requested(conf):
             print("------------------------------------------------------------------------")
             conf["USE_SHIPPED_BOOST"] = False
 
-            delay = 10
-
-            from time import sleep
-            import sys
-            while delay:
-                sys.stdout.write("Continuing in %d seconds...   \r" % delay)
-                sys.stdout.flush()
-                delay -= 1
-                sleep(1)
+            count_down_delay(delay=10)
 
     if conf["USE_SHIPPED_BOOST"]:
         conf["BOOST_INC_DIR"] = ["bpl-subset/bpl_subset"]
@@ -564,16 +571,33 @@ def set_up_shipped_boost_if_requested(conf):
         source_files = [f for f in source_files
                 if not f.startswith("bpl-subset/bpl_subset/libs/thread/src")]
 
-        import sys
-        if sys.platform == "nt":
+        if sys.platform == "win32":
             source_files += glob(
                     "bpl-subset/bpl_subset/libs/thread/src/win32/*.cpp")
         else:
             source_files += glob(
                     "bpl-subset/bpl_subset/libs/thread/src/pthread/*.cpp")
 
+        from os.path import isdir
+        main_boost_inc = "bpl-subset/bpl_subset/boost"
+        bpl_project_boost_inc = "bpl-subset/bpl_subset/%sboost" % project_name
+
+        if not isdir(bpl_project_boost_inc):
+            try:
+                from os import symlink
+            except ImportError:
+                from shutil import copytree
+                print("Copying files, hang on... (do not interrupt)")
+                copytree(main_boost_inc, bpl_project_boost_inc)
+            else:
+                symlink("boost", bpl_project_boost_inc)
+
         return (source_files,
-                {"BOOST_MULTI_INDEX_DISABLE_SERIALIZATION": 1}
+                {
+                    "BOOST_MULTI_INDEX_DISABLE_SERIALIZATION": 1,
+                    "BOOST_PYTHON_SOURCE": 1,
+                    "boost": '%sboost' % project_name
+                    }
                 )
     else:
         return [], {}
@@ -685,3 +709,101 @@ def substitute(substitutions, fname):
     from os import stat, chmod
     infile_stat_res = stat(fname_in)
     chmod(fname, infile_stat_res.st_mode)
+
+
+
+
+def check_git_submodules():
+    from os.path import isdir
+    if not isdir(".git"):
+        # not a git repository
+        return
+
+    git_error = None
+    from subprocess import Popen, PIPE
+    try:
+        popen = Popen(["git", "--version"], stdout=PIPE)
+        stdout_data, _ = popen.communicate()
+        if popen.returncode != 0:
+            git_error = "git returned error code %d" % popen.returncode
+    except OSError:
+        git_error = "(os error, likely git not found)"
+
+    if git_error is not None:
+        print("-------------------------------------------------------------------------")
+        print("Trouble invoking git")
+        print("-------------------------------------------------------------------------")
+        print("The package directory appears to be a git repository, but I could")
+        print("not invoke git to check whether my submodules are up to date.")
+        print("")
+        print("The error was:")
+        print(e)
+        print("Hit Ctrl-C now if you'd like to think about the situation.")
+        print("-------------------------------------------------------------------------")
+        count_down_delay(delay=5)
+        return
+
+    popen = Popen(["git", "submodule", "status"], stdout=PIPE)
+    stdout_data, _ = popen.communicate()
+    stdout_data = stdout_data.decode("ascii")
+    if popen.returncode != 0:
+        git_error = "git returned error code %d" % popen.returncode
+
+    pkg_warnings = []
+
+    lines = stdout_data.split("\n")
+    for l in lines:
+        if not l.strip():
+            continue
+
+        status = l[0]
+        sha, package = l[1:].split(" ", 1)
+
+        if package == "bpl-subset":
+            # treated separately
+            continue
+
+        if status == "+":
+            pkg_warnings.append("version of '%s' is not what this outer package wants"
+                    % package)
+        elif status == "-":
+            pkg_warnings.append("subpackage '%s' is not initialized" 
+                    % package)
+        elif status == " ":
+            pass
+        else:
+            pkg_warnings.append("subpackage '%s' has unrecognized status '%s'"
+                    % package)
+
+    if pkg_warnings:
+            print("-------------------------------------------------------------------------")
+            print("git submodules are not up-to-date or in odd state")
+            print("-------------------------------------------------------------------------")
+            print("If this makes no sense, you probably want to say")
+            print("")
+            print(" $ git submodule init")
+            print(" $ git submodule update")
+            print("")
+            print("to fetch what you are presently missing and move on with your life.")
+            print("If you got this from a distributed package on the net, that package is")
+            print("broken and should be fixed. Please inform whoever gave you this package.")
+            print("")
+            print("These issues were found:")
+            for w in pkg_warnings:
+                print("  %s" % w)
+            print("")
+            print("I will try to continue after a short wait, fingers crossed.")
+            print("-------------------------------------------------------------------------")
+            print("Hit Ctrl-C now if you'd like to think about the situation.")
+            print("-------------------------------------------------------------------------")
+
+            count_down_delay(delay=10)
+
+
+
+
+
+
+
+
+
