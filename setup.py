@@ -120,9 +120,10 @@ def main():
             #setup_requires=[
                     #"numpy>=1.0.4",
                     #],
-            #install_requires=[
+            install_requires=[
                     #"numpy>=1.0.4",
-                    #],
+                    "pytest>=2",
+                    ],
 
             packages=["pyublas"],
             ext_package="pyublas",

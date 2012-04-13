@@ -196,3 +196,14 @@ def test_2d():
 
     te.dbl_numpy_vec_inplace(a)
     assert (a_orig == 2).all()
+
+
+
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:
+        exec(sys.argv[1])
+    else:
+        from py.test.cmdline import main
+        main([__file__])
