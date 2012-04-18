@@ -127,7 +127,7 @@ Step 6: Test PyUblas
 If you'd like to be extra-careful, you can run PyUblas's unit tests::
 
     $ cd PyUblas-VERSION/test
-    $ python test.py
+    $ python test_pyublas.py
 
 If it says "OK" at the end, you're golden.
 
