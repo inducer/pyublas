@@ -1,4 +1,5 @@
-include src/cpp/pyublas/*.hpp
+include pyublas/include/pyublas/*.hpp
+
 include src/wrapper/*.hpp
 include test/*.py
 include test/*.cpp

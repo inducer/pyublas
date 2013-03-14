@@ -61,40 +61,9 @@ def main():
 
     setup(
             name="PyUblas",
-            version="2011.1",
+            version="2013.1",
             description="Seamless Numpy-UBlas interoperability",
-            long_description="""
-            PyUblas provides a seamless glue layer between
-            `Numpy <http://www.numpy.org>`_ and
-            `Boost.Ublas <http://www.boost.org/doc/libs/1_35_0/libs/numeric/ublas/doc/index.htm>`_
-            for use with
-            `Boost.Python <http://www.boost.org/doc/libs/1_35_0/libs/python/doc/index.html>`_.
-
-            What does that mean? When writing
-            `hybrid scientific code <http://mathema.tician.de/node/455>`_,
-            one of the main problems is that abstractions that
-            exist in the high-level language go away or become unwieldy in the
-            low-level language. Sometimes libraries exist in both languages for
-            these abstractions, but they refuse to talk to each other. PyUblas is
-            a bridge between two such libraries, for some of the main
-            abstractions used in scientific codes, namely vectors and matrices.
-
-            Documentation
-            =============
-
-            See the
-            `PyUblas Documentation <http://tiker.net/doc/pyublas>`_
-            page.
-
-            PyUblasExt
-            ==========
-
-            PyUblasExt is a companion to PyUblas and exposes a variety of useful
-            additions to PyUblas, such as an "operator" class, matrix-free linear
-            system solvers and eigensolvers. Interested? Head over to the
-            `PyUblasExt <http://mathema.tician.de/software/pyublas/pyublasext>`_
-            page.
-            """,
+            long_description=open("README.rst", "rt").read(),
             author="Andreas Kloeckner",
             author_email="inform@tiker.net",
             license = "BSD",
@@ -108,7 +77,14 @@ def main():
               'Operating System :: MacOS :: MacOS X',
               'Operating System :: POSIX',
               'Programming Language :: Python',
+              'Programming Language :: Python :: 2',
+              'Programming Language :: Python :: 2.4',
+              'Programming Language :: Python :: 2.5',
+              'Programming Language :: Python :: 2.6',
+              'Programming Language :: Python :: 2.7',
               'Programming Language :: Python :: 3',
+              'Programming Language :: Python :: 3.2',
+              'Programming Language :: Python :: 3.3',
               'Programming Language :: C++',
               'Topic :: Scientific/Engineering',
               'Topic :: Scientific/Engineering :: Mathematics',
@@ -154,6 +130,8 @@ def main():
                         "include/pyublas/*.hpp",
                         ]
                     },
+
+            zip_safe=False,
 
             # 2to3 invocation
             cmdclass={'build_py': build_py})
