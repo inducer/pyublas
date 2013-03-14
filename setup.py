@@ -15,9 +15,9 @@ def get_config_schema():
         Switch("WITH_SPARSE_WRAPPERS", False, "Whether to build sparse wrappers"),
         Switch("USE_ITERATORS", False, "Whether to use iterators (faster, requires new Boost)"),
 
-        StringListOption("CXXFLAGS", ["-Wno-sign-compare"], 
+        StringListOption("CXXFLAGS", ["-Wno-sign-compare"],
             help="Any extra C++ compiler options to include"),
-        StringListOption("LDFLAGS", [], 
+        StringListOption("LDFLAGS", [],
             help="Any extra linker options to include"),
         ])
 
@@ -32,7 +32,7 @@ def main():
     hack_distutils()
     conf = get_config(get_config_schema())
 
-    INCLUDE_DIRS = ["src/cpp"] + conf["BOOST_INC_DIR"] 
+    INCLUDE_DIRS = ["pyublas/include"] + conf["BOOST_INC_DIR"]
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
 
@@ -44,7 +44,7 @@ def main():
     ext_src = [
             "src/wrapper/main.cpp",
             "src/wrapper/converters.cpp",
-            ] 
+            ]
 
     if conf["WITH_SPARSE_WRAPPERS"]:
         ext_src += [
@@ -70,8 +70,8 @@ def main():
             for use with
             `Boost.Python <http://www.boost.org/doc/libs/1_35_0/libs/python/doc/index.html>`_.
 
-            What does that mean? When writing 
-            `hybrid scientific code <http://mathema.tician.de/node/455>`_, 
+            What does that mean? When writing
+            `hybrid scientific code <http://mathema.tician.de/node/455>`_,
             one of the main problems is that abstractions that
             exist in the high-level language go away or become unwieldy in the
             low-level language. Sometimes libraries exist in both languages for
@@ -82,7 +82,7 @@ def main():
             Documentation
             =============
 
-            See the 
+            See the
             `PyUblas Documentation <http://tiker.net/doc/pyublas>`_
             page.
 
@@ -92,7 +92,7 @@ def main():
             PyUblasExt is a companion to PyUblas and exposes a variety of useful
             additions to PyUblas, such as an "operator" class, matrix-free linear
             system solvers and eigensolvers. Interested? Head over to the
-            `PyUblasExt <http://mathema.tician.de/software/pyublas/pyublasext>`_ 
+            `PyUblasExt <http://mathema.tician.de/software/pyublas/pyublasext>`_
             page.
             """,
             author="Andreas Kloeckner",
@@ -127,8 +127,8 @@ def main():
 
             packages=["pyublas"],
             ext_package="pyublas",
-            ext_modules=[ 
-                    NumpyExtension("_internal", 
+            ext_modules=[
+                    NumpyExtension("_internal",
                         ext_src,
                         include_dirs=INCLUDE_DIRS,
                         library_dirs=LIBRARY_DIRS,
@@ -137,7 +137,7 @@ def main():
                         extra_compile_args=conf["CXXFLAGS"],
                         extra_link_args=conf["LDFLAGS"],
                         ),
-                    NumpyExtension("testhelp_ext", 
+                    NumpyExtension("testhelp_ext",
                         ["src/test/testhelp_ext.cpp"],
                         include_dirs=INCLUDE_DIRS,
                         library_dirs=LIBRARY_DIRS,
@@ -147,7 +147,13 @@ def main():
                         extra_link_args=conf["LDFLAGS"],
                         )
                     ],
-            data_files=[("include/pyublas", glob.glob("src/cpp/pyublas/*.hpp"))],
+
+            include_package_data=True,
+            package_data={
+                    "pyublas": [
+                        "include/pyublas/*.hpp",
+                        ]
+                    },
 
             # 2to3 invocation
             cmdclass={'build_py': build_py})
