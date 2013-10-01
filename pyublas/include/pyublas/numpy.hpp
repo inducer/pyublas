@@ -46,6 +46,26 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
+#if NPY_FEATURE_VERSION < 0x00000007
+
+#define NPY_ARRAY_ALIGNED       NPY_ALIGNED
+#define NPY_ARRAY_NOTSWAPPED    NPY_NOTSWAPPED
+#define NPY_ARRAY_C_CONTIGUOUS  NPY_C_CONTIGUOUS
+#define NPY_ARRAY_F_CONTIGUOUS  NPY_F_CONTIGUOUS
+#define NPY_ARRAY_CARRAY        NPY_CARRAY
+#define NPY_ARRAY_FARRAY        NPY_FARRAY
+
+namespace
+{
+  inline int PyArray_SetBaseObject(PyArrayObject * obj, PyObject * base)
+  {
+    PyArray_BASE(obj) = base;
+    return 0;
+  }
+}
+
+#endif
+
 namespace
 {
   static struct pyublas_array_importer
