@@ -133,18 +133,16 @@ namespace
       }
 
 
-      static void *check(PyObject* pyobj)
+      static void *check(PyObject* obj)
       {
-        if (!PyArray_Check(pyobj))
+        if (!PyArray_Check(obj))
         {
           if (trace_conversion)
             std::cerr
-              << boost::format("obj %1% rejected as vec: not a numpy array") % pyobj
+              << boost::format("obj %1% rejected as vec: not a numpy array") % obj
               << std::endl;
           return 0;
         }
-
-        PyArrayObject * obj = reinterpret_cast<PyArrayObject *>(pyobj);
 
         if (!is_storage_compatible<typename super::value_type>(obj))
         {
@@ -199,18 +197,16 @@ namespace
       typedef array_converter_base<MatrixType> super;
 
     public:
-      static void *check(PyObject* pyobj)
+      static void *check(PyObject* obj)
       {
-        if (!PyArray_Check(pyobj))
+        if (!PyArray_Check(obj))
         {
           if (trace_conversion)
             std::cerr
-              << boost::format("obj %1% rejected as mat: not a numpy array") % pyobj
+              << boost::format("obj %1% rejected as mat: not a numpy array") % obj
               << std::endl;
           return 0;
         }
-
-        PyArrayObject * obj = reinterpret_cast<PyArrayObject *>(pyobj);
 
         if (!is_storage_compatible<typename super::value_type>(obj))
         {
@@ -244,7 +240,7 @@ namespace
             return 0;
           }
 
-          if (!PyArray_CHKFLAGS(obj, NPY_ARRAY_C_CONTIGUOUS))
+          if (!PyArray_CHKFLAGS(obj, NPY_C_CONTIGUOUS))
           {
             if (trace_conversion)
               std::cerr
@@ -264,7 +260,7 @@ namespace
             return 0;
           }
 
-          if (!PyArray_CHKFLAGS(obj, NPY_ARRAY_F_CONTIGUOUS))
+          if (!PyArray_CHKFLAGS(obj, NPY_F_CONTIGUOUS))
           {
             if (trace_conversion)
               std::cerr
