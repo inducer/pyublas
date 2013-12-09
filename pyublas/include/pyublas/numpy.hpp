@@ -166,7 +166,7 @@ namespace pyublas
 
       numpy_array(size_type n)
       {
-        npy_intp dims[] = { n };
+        npy_intp dims[] = { static_cast<npy_intp>(n) };
         m_numpy_array = boost::python::handle<>(
             PyArray_SimpleNew(1, dims, get_typenum(T())));
       }
@@ -193,7 +193,7 @@ namespace pyublas
       {
         if (n)
         {
-          npy_intp dims[] = { n };
+          npy_intp dims[] = { static_cast<npy_intp>(n) };
           m_numpy_array = boost::python::handle<>(
               PyArray_SimpleNew(1, dims, get_typenum(T())));
           std::fill(begin(), end(), v);
@@ -257,7 +257,7 @@ namespace pyublas
 
         if (new_size != old_size)
         {
-          npy_intp dims[] = { new_size };
+          npy_intp dims[] = { static_cast<npy_intp>(new_size) };
           boost::python::handle<> new_array = boost::python::handle<>(
               PyArray_SimpleNew(1, dims, get_typenum(T())));
           pointer new_data = reinterpret_cast<T *>(
