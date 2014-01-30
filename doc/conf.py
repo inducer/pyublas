@@ -91,7 +91,6 @@ else:
     # documentation.
     html_theme_options = {
             "navbar_fixed_top": "true",
-            "navbar_class": "navbar navbar-inverse",
             "navbar_site_name": "Contents",
             }
 
