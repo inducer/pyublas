@@ -359,6 +359,9 @@ else:
         return None
 
 
+def get_include_path():
+    from pkg_resources import Requirement, resource_filename
+    return resource_filename(Requirement.parse("PyUblas"), "pyublas/include")
 
 
 # C++ interface utilities -----------------------------------------------------
