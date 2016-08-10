@@ -18,3 +18,5 @@ dist
 .build
 setuptools.pth
 distribute-*.tar.gz
+
+.cache
