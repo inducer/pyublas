@@ -56,7 +56,7 @@ def main():
 
     setup(
             name="PyUblas",
-            version="2013.1",
+            version="2017.1",
             description="Seamless Numpy-UBlas interoperability",
             long_description=open("README.rst", "rt").read(),
             author="Andreas Kloeckner",
